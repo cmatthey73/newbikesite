@@ -1,0 +1,16 @@
+
+{% load static %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'biketours/mystyle.css' %}">
+
+<h1> Les activités suivantes sont disponibles </h1>
+
+{% if lst_act %}
+	<ul>
+		{% for n in lst_act %}
+		<li><a href="./{{n.pk}}/">{{n.Type}} </a></li>
+		{% endfor %}
+	</ul>
+{% else %}
+	<h1> Ils sont où les liens ? .... </h1>
+{% endif %}

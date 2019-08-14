@@ -1,0 +1,56 @@
+
+{% load static %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'biketours/mystyle.css' %}">
+
+<h1> Statistiques activité : {{act}} </h1>
+{% if stat_comp_act %}
+	<table>
+		<tr>
+			<th colspan="2">Total {{act}}</th>
+		</tr>
+		{% for k,v in stat_comp_act.items %}
+		<tr>
+			<td>{{k}} </td>
+			<td>{{v}} </td>
+		</tr>
+		{% endfor %}
+	</table>
+	<br>
+	<table>
+		<tr>
+			<th colspan="2">Total {{act}} - moy last 3y</th>
+		</tr>
+		{% for k,v in stat_comp_act_last.items %}
+		<tr>
+			<td>{{k}} </td>
+			<td>{{v}} </td>
+		</tr>
+		{% endfor %}
+	</table>
+{% endif %}
+{% if stat_act_y %}
+<div class="row">
+	<br>
+	
+		{% for k, v in stat_act_y.items %}
+		<div class="column">
+		<table>
+			<tr>
+				<th colspan="3">{{k}} </th>
+			</tr>
+			{% for a, b in v.items %}
+			<tr>
+				<td>{{a}} </td>
+				<td>{{b}} </td>
+			</tr>
+			{% endfor %}
+		</table>
+		<br>
+		</div>
+		{% endfor %}
+		
+</div>
+{% else %}
+	<h1> Ils sont où les liens ? .... </h1>
+{% endif %}

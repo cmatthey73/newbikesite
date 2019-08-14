@@ -1,0 +1,17 @@
+
+{% load static %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'biketours/mystyle.css' %}">
+
+<h1> Les mois suivants sont disponibles </h1>
+
+{% if lst_mth %}
+	<ul>
+		{% for n in lst_mth %}
+		<!-- <li><a href="./{{n.month}}/">{{n.month}} </a></li> -->
+		<li><a href="./{{n}}/">{{n}} </a></li>
+		{% endfor %}
+	</ul>
+{% else %}
+	<h1> Ils sont où les liens ? .... </h1>
+{% endif %}

@@ -1,0 +1,60 @@
+
+{% load static %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'biketours/mystyle.css' %}">
+
+<h1> Statistiques mensuelles - mois : {{mth_id}} </h1>
+{% if stat_comp_act %}
+	<table>
+		<tr>
+			<th colspan="2">Total vtt + route</th>
+		</tr>
+		{% for k,v in stat_comp_act.items %}
+		<tr>
+			<td>{{k}} </td>
+			<td>{{v}} </td>
+		</tr>
+		{% endfor %}
+	</table>
+	<br>
+	<table>
+		<tr>
+			<th colspan="2">Total vtt + route - moy last 3y</th>
+		</tr>
+		{% for k,v in stat_comp_act_last.items %}
+		<tr>
+			<td>{{k}} </td>
+			<td>{{v}} </td>
+		</tr>
+		{% endfor %}
+	</table>
+	<br>
+{% endif %}
+{% if stat_comp_act_y %}
+	<div class="row">
+	{% for a,b in stat_comp_act_y.items %}
+	<div class="col_2">
+	<table>
+		<tr>
+			<th class="title1", colspan="2">{{a}} </td>
+		</tr>
+		{% for c, d in b.items %}
+		<tr>
+			<td class="title2", colspan="2">{{c}} </td>
+		</tr>
+			{% for e, f in d.items %}
+			<tr>
+				<td>{{e}} </td>
+				<td>{{f}} </td>
+			</tr>
+			{% endfor %}
+		{% endfor %}
+	</table>
+	</div>
+	
+	{% endfor %}
+	</div>
+{% else %}
+	<h1> WTF ? .... </h1>
+{% endif %}
+

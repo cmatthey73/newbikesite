@@ -1,0 +1,56 @@
+
+{% load static %}
+{% load humanize %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'biketours/mystyle.css' %}">
+
+<!-- <h1> Les performances suivantes sont disponibles </h1> -->
+<h1> {{tour.title}} </h1>
+<!-- <br><br> -->
+{% if all_perf %}
+<div class="row">
+	<div class="col_2">
+		<table>
+			<tr>
+				<th>Date</th>
+				<th>Lien</th>
+				<th>Distance</th>
+				<th>Temps</th>
+				<th>Dénivelé</th>
+				<th>Moyenne</th>
+				<th>Remarques</th>
+			</tr>
+			{% for n in all_perf %}
+			<tr>
+				<td>{{n.Date}}</td>
+				<td><a href="./{{n.pk}}/">{{n.pk}} </a></td>
+				<td>{{n.Distance}}</td>
+				<td>{{n.Temps}}</td>
+				<td>{{n.Dénivelé|floatformat|intcomma}}</td>
+				<td>n.d.</td>
+				<td>{{n.Remarques}}</td>
+			</tr>
+			{% endfor %}
+		</table>
+	</div>
+	<div class="col_2">
+		{% for k, v in perf_y.items %}
+		<table>
+			<tr>
+				<th colspan="2">{{k}} </th>
+			</tr>
+				{% for a, b in v.items %}
+				<tr>
+					<td>{{a}} </td>
+					<td>{{b}} </td>
+				</tr>
+				{% endfor %}
+		</table>
+		<br>
+		{% endfor %}
+		
+	</div>
+</div>
+{% else %}
+	<h1> C'est vide ? .... </h1>
+{% endif %}

@@ -1,0 +1,16 @@
+
+{% load static %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'biketours/mystyle.css' %}">
+
+<h1> {{title}} </h1>
+<br><br>
+	{% if image %}
+	<p><img src="{% static 'biketours/images/comp_date.png' %}" alt="Test" ></p>
+	
+	<br>
+	<p>"{{image}}"</p>
+	{% else %}
+		<h1> C'est vide ? .... </h1>
+	{% endif %}
+	
