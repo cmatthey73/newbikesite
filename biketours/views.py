@@ -2,9 +2,11 @@ from django.shortcuts import render
 from django.http import HttpResponse
 import datetime, re
 from .models import BikeTour, Perfo, Type
+from .forms import AdaptForm
 from django.db.models import Sum, Avg, Max, Min, Count, Q
 from . import test
 from . import graph
+from . import importDB
 
 #from matplotlib import pylab
 #from pylab import *
@@ -131,9 +133,19 @@ def perf_tours(request, tour_id):
 def det_perf(request, perf_id): ## A DEVELOPPER : QUE MONTRER ??? AUTRES PERFORMANCES LIEES AU MEME TOUR ???
     perf = Perfo.objects.get(pk=perf_id)
     perf_old = agrperfo(Perfo.objects.filter(Refparcours=perf.Refparcours), stat="avg")
-    
+    if request.method == "POST":
+        form = AdaptForm(request.POST, instance=perf) # instance = ... permet de mettre à jour une données existante !
+    else:
+        form = AdaptForm(initial={"Refparcours" : perf.Refparcours,
+                                  "Remarques" : perf.Remarques}, instance=perf)
+               # initial = ... permet de de donner des valeurs initiales (ici celles de perf) !
+        
+    if form.is_valid(): 
+        form.save()
+            
     context = {"perf":perf,
-               "perf_old":perf_old}
+               "perf_old":perf_old,
+               "form":form}
     return render(request, "biketours/det_perf.html" ,context)
 
 ##### 2. Statistiques
@@ -311,9 +323,63 @@ def graph_comp(request):
 ##### 4. Input données
 
 def datainput(request):
-    image = "aaa"
-    context = {"image":image}
-    return render(request, "biketours/input.html" ,context)
+    data = {}
+    if "GET" == request.method:
+        return render(request, "biketours/input.html", data)
+        # if not GET, then proceed
+    else:
+        csv_file = request.FILES["csv_file"]  
+        test = csv_file.name
+        if not csv_file.name.endswith('.csv'):
+            return render(request, "biketours/input.html", data)
+        else:
+            importDB.import_garmin(test)
+            context = {"test":test}
+            return render(request, "biketours/input.html" ,context)
+
+
+# exemple
+#def upload_csv(request):
+#	data = {}
+#	if "GET" == request.method:
+#		return render(request, "myapp/upload_csv.html", data)
+#    # if not GET, then proceed
+#	try:
+#		csv_file = request.FILES["csv_file"]
+#		if not csv_file.name.endswith('.csv'):
+#			messages.error(request,'File is not CSV type')
+#			return HttpResponseRedirect(reverse("myapp:upload_csv"))
+#        #if file is too large, return
+#		if csv_file.multiple_chunks():
+#			messages.error(request,"Uploaded file is too big (%.2f MB)." % (csv_file.size/(1000*1000),))
+#			return HttpResponseRedirect(reverse("myapp:upload_csv"))
+#
+#		file_data = csv_file.read().decode("utf-8")		
+#
+#		lines = file_data.split("\n")
+#		#loop over the lines and save them in db. If error , store as string and then display
+#		for line in lines:						
+#			fields = line.split(",")
+#			data_dict = {}
+#			data_dict["name"] = fields[0]
+#			data_dict["start_date_time"] = fields[1]
+#			data_dict["end_date_time"] = fields[2]
+#			data_dict["notes"] = fields[3]
+#			try:
+#				form = EventsForm(data_dict)
+#				if form.is_valid():
+#					form.save()					
+#				else:
+#					logging.getLogger("error_logger").error(form.errors.as_json())												
+#			except Exception as e:
+#				logging.getLogger("error_logger").error(repr(e))					
+#				pass
+#
+#	except Exception as e:
+#		logging.getLogger("error_logger").error("Unable to upload file. "+repr(e))
+#		messages.error(request,"Unable to upload file. "+repr(e))
+#
+#	return HttpResponseRedirect(reverse("myapp:upload_csv"))
     
 ##### 5. Tests
 

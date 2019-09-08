@@ -469,8 +469,9 @@ import pandas as pd
 import sqlite3
 import datetime
 import re
+import numpy as np
 
-df = pd.read_csv("C:/Users/chris/Documents/Activities_13082019.csv", header=0, sep=",")
+df = pd.read_csv("C:/Users/chris/Documents/Activities_28082019.csv", header=0, sep=",")
 df.columns=df.columns.str.replace(" ","_") # suppression espaces !
 df.columns
 df.dtypes
@@ -482,6 +483,11 @@ df["Date"]=pd.to_datetime(df["Date"], yearfirst=True)
 df=df.sort_values(by=["Date"], ascending=True)
 df["Date"]=df["Date"].map(lambda x: x.date()) 
 df.dtypes
+
+# Transformation champs FC
+df[["Fréquence_cardiaque_moyenne",
+      "Fréquence_cardiaque_maximale"]]=df[["Fréquence_cardiaque_moyenne",
+      "Fréquence_cardiaque_maximale"]].astype(dtype=np.float64) 
 
 # Transformation champ Temps (Timedelta)
 #df["Temps"]=pd.to_timedelta(df["Temps"])/datetime.timedelta(microseconds=1)
