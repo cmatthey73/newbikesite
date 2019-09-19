@@ -1,19 +1,8 @@
-
-{% load static %}
-
-<link rel="stylesheet" type="text/css" href="{% static 'biketours/mystyle.css' %}">
-<div class="topnav">
-  <a class="active" href="/">Home</a>
-  <a href="../admin">Admin</a>
-</div>
+{% extends 'biketours/base.html' %}
+{% block content %}
 <h1> Les tours suivants sont disponibles </h1>
 <br>
-<button onclick="location.href='../'" type="button"> Home</button>
-
-
-
-
-<br>		 
+ 
 {% if all_tours %}
 	<div class="index_l">
 	<ul>
@@ -25,5 +14,5 @@
 {% else %}
 	<h1> C'est vide ? .... </h1>
 {% endif %}
-
+{% endblock %}
  

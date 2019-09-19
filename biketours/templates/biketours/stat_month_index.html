@@ -1,11 +1,5 @@
-
-{% load static %}
-
-<link rel="stylesheet" type="text/css" href="{% static 'biketours/mystyle.css' %}">
-<div class="topnav">
-  <a class="active" href="/">Home</a>
-  <a href="../admin">Admin</a>
-</div>
+{% extends 'biketours/base.html' %}
+{% block content %}
 
 <h1> Les mois suivants sont disponibles </h1>
 
@@ -19,3 +13,4 @@
 {% else %}
 	<h1> Ils sont où les liens ? .... </h1>
 {% endif %}
+{% endblock %}

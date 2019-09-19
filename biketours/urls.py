@@ -32,7 +32,8 @@ urlpatterns = [
     re_path(r"^input/$", views.datainput, name="datainput"),
     
     ## tests
-    re_path(r"^tests/$", views.tests, name="tests"),
+    re_path(r"^tests/$", views.tests, name="tst"),
+    
 ]
 
 

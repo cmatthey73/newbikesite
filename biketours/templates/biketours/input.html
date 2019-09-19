@@ -1,15 +1,9 @@
+{% extends 'biketours/base.html' %}
+{% block content %}
 
-{% load static %}
-
-<link rel="stylesheet" type="text/css" href="{% static 'biketours/mystyle.css' %}">
-<div class="topnav">
-  <a class="active" href="/">Home</a>
-  <a href="../admin">Admin</a>
-</div>
 <body>
 <h1> Importation CSV extrait - {{test}}  </h1>
 <br>
-<button onclick="location.href='../'" type="button"> Home</button>
 <br>
 <form action="{% url 'datainput' %}" method="POST" enctype="multipart/form-data" class="form-horizontal"> 
 {% csrf_token %}
@@ -31,3 +25,4 @@
 {% endif %}
 
 </body>
+{% endblock %}

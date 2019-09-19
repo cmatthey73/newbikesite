@@ -1,33 +1,17 @@
+{% extends 'biketours/base.html' %}
+{% block content %}
+<!-- Fengyuan Chen's Datepicker -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/datepicker/0.6.5/datepicker.min.css" integrity="sha256-b88RdwbRJEzRx95nCuuva+hO5ExvXXnpX+78h8DjyOE=" crossorigin="anonymous" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/datepicker/0.6.5/datepicker.min.js" integrity="sha256-/7FLTdzP6CfC1VBAj/rsp3Rinuuu9leMRGd354hvk0k=" crossorigin="anonymous"></script>
 
-{% load static %}
-
-<link rel="stylesheet" type="text/css" href="{% static 'biketours/mystyle.css' %}">
-<div class="topnav">
-  <a class="active" href="/">Home</a>
-  <a href="../admin">Admin</a>
-</div>
-
-<h1> Comparaison : {{dt}} </h1>
+<h1> Comparaison : {{dt|date:"SHORT_DATE_FORMAT" }} </h1>
 <!-- PARTIE FORM A ADAPTER POUR EFFECTUER COMPARAISON A LA DATE CHOISIE -->
-<!-- <form action="{% url 'datainput' %}" method="POST" enctype="multipart/form-data" class="form-horizontal">  -->
-<!-- {% csrf_token %} -->
-<!-- <div class="form-group"> -->
-    <!-- <label for="name" class="col-md-3 col-sm-3 col-xs-12 control-label">File: </label> -->
-    <!-- <div class="col-md-8"> -->
-        <!-- <input type="file" name="csv_file" id="csv_file" required="True" class="form-control"> -->
-    <!-- </div>                     -->
-<!-- </div> -->
-<!-- <div class="form-group">                     -->
-    <!-- <div class="col-md-3 col-sm-3 col-xs-12 col-md-offset-3" style="margin-bottom:10px;"> -->
-         <!-- <button class="btn btn-primary"> <span class="glyphicon glyphicon-upload" style="margin-right:5px;"></span>Upload </button> -->
-    <!-- </div>  -->
-<!-- </div> -->
-<!-- </form> -->
-<!-- <form action="/action_page.php"> -->
-  <!-- Birthday: -->
-  <!-- <input type="date" name="bday"> -->
-  <!-- <input type="submit"> -->
-<!-- </form> -->
+<input id="datepicker">
+<script>
+    $(function () {
+      $("#datepicker").datepicker();
+    });
+ </script> 
 {% if stat_comp_act %}
 	<table>
 		<tr>
@@ -80,3 +64,4 @@
 {% else %}
 	<h1> Ils sont où les liens ? .... </h1>
 {% endif %}
+{% endblock %}

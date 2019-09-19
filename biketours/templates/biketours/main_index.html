@@ -1,17 +1,8 @@
+{% extends 'biketours/base.html' %}
+{% block content %}
 
-{% load static %}
-
-<link rel="stylesheet" type="text/css" href="{% static 'biketours/mystyle.css' %}">
-<body>
-<div class="topnav">
-  <a class="active" href="/">Home</a>
-  {% for n, link in lst_link.items %}
-	<a href="/{{link}}/">{{n}}</a>
-  {% endfor %}
-  <a href="../admin">Admin</a>
-</div>
 <h1> Les liens suivants sont disponibles </h1>
-<br><br>
+<br>
 {% if lst_link %}
 	<div class="index">
 	<ul>
@@ -28,8 +19,7 @@
 {% endif %}
 <br>
 {% if dt %}
-<div id='test' style='display:none'>
-	<h2> Etat au {{dt}} </h2>
+	<h2> Etat au {{dt|date:"SHORT_DATE_FORMAT"}} </h2>
 	<table>
 		<tr>
 			<th colspan="2">Total vtt + route</th>
@@ -53,13 +43,9 @@
 		</tr>
 		{% endfor %}
 	</table>
-	<button type="button" onclick="document.getElementById('test').style.display='none'">Hide</button>
-<br>
-	<br>
-</div>
-<button type="button" onclick="document.getElementById('test').style.display='block'">Comparaison</button>
 <br>
 
 {% endif %}
 
 </body>
+{% endblock %}

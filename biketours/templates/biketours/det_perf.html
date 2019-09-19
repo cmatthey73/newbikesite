@@ -1,11 +1,5 @@
-
-{% load static %}
-
-<link rel="stylesheet" type="text/css" href="{% static 'biketours/mystyle.css' %}">
-<div class="topnav">
-  <a class="active" href="/">Home</a>
-  <a href="../admin">Admin</a>
-</div>
+{% extends 'biketours/base.html' %}
+{% block content %}
 
 <h1> Détail de la performance </h1>
 <br><br>
@@ -27,13 +21,12 @@
 		</tr>
 		{% endfor %}
 	</table>
-{% block content %}
     <h2>Modification parcours</h2>
     <form method="POST" class="post-form">{% csrf_token %}
         {{ form.as_p }}
         <button type="submit" class="save btn btn-default">Save</button>
     </form>
-{% endblock %}
 {% else %}
 	<h1> C'est vide ? .... </h1>
 {% endif %}
+{% endblock %}

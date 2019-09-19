@@ -4,6 +4,8 @@ import datetime, re
 from .models import BikeTour, Perfo, Type
 from .forms import AdaptForm
 from django.db.models import Sum, Avg, Max, Min, Count, Q
+import json
+
 from . import test
 from . import graph
 from . import importDB
@@ -384,6 +386,75 @@ def datainput(request):
 ##### 5. Tests
 
 def tests(request):
-    a = test.niet()
-    context = {"a":a}
+    stat_y_act = dict()
+    type_bike=list()
+    ser_dist=list()
+    ser_time=list()
+    ser_deniv=list()
+        
+    for y in Perfo.objects.dates("Date", "year", order="DESC") :
+        data_y = Perfo.objects.filter(Date__year=y.year)
+        tmp=dict()
+        dist_bike=list()
+        time_bike=list()
+        deniv_bike=list()
+        for t in Type.objects.values_list("pk", flat=True) :
+            l_t = BikeTour.objects.filter(Type=t).values_list("pk", flat=True)
+            tp = Type.objects.get(pk=t).Type
+            tmp[tp] = data_y.filter(Refparcours__in = l_t).aggregate(Nb=Count("Distance"), Distance_tot=Sum("Distance"), Temps_tot=Sum("Temps"), Dénivelé_tot=Sum("Dénivelé"))
+            if tp not in type_bike:
+                    type_bike.append(tp)
+            dist_bike.append(tmp[tp]["Distance_tot"])
+            time_bike.append(tmp[tp]["Temps_tot"])
+            deniv_bike.append(tmp[tp]["Dénivelé_tot"])
+        
+        serie = {'name': y.year,
+                 'data': dist_bike,
+                 'color': 'blue'}
+        ser_dist.append(serie)
+        
+        serie = {'name': y.year,
+                 'data': time_bike,
+                 'color': 'red'}
+        ser_time.append(serie)
+        
+        serie = {'name': y.year,
+                 'data': deniv_bike,
+                 'color': 'green'}
+        ser_deniv.append(serie)
+        
+        stat_y_act[y.year]=tmp
+            
+    chart = {
+        'chart': {'type': 'column'},
+        'title': {'text': 'Distance par activité'},
+        'xAxis': {'categories': type_bike},
+        'series': ser_dist
+    }
+      
+    dist = json.dumps(chart)
+
+#    chart = {
+#        'chart': {'type': 'column'},
+#        'title': {'text': 'Distance par activité'},
+#        'xAxis': {'categories': type_bike},
+#        'series': ser_time
+#    }
+#      
+#    time = json.dumps(chart)
+
+    chart = {
+        'chart': {'type': 'column'},
+        'title': {'text': 'Dénivelé par activité'},
+        'xAxis': {'categories': type_bike},
+        'series': ser_deniv
+    }
+      
+    deniv = json.dumps(chart)
+
+
+    context = {"dist":dist,
+#               "time":time,
+               "deniv":deniv}
     return render(request, "biketours/tests.html" ,context)
+

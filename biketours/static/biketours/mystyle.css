@@ -82,14 +82,16 @@ img {
 
 /* Add a black background color to the top navigation */
 .topnav {
-  background-color: #333;
+  /*background-color: #333;*/
+  background-color: #ccccff;
   overflow: hidden;
 }
 
 /* Style the links inside the navigation bar */
 .topnav a {
   float: left;
-  color: #f2f2f2;
+  /* color: #f2f2f2; */
+  color: white;
   text-align: center;
   padding: 14px 16px;
   text-decoration: none;
@@ -104,6 +106,7 @@ img {
 
 /* Add a color to the active/current link */
 .topnav a.active {
-  background-color: #4CAF50;
+  /* background-color: #4CAF50; */
+  background-color: #6666ff;
   color: white;
 }

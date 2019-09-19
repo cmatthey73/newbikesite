@@ -1,11 +1,56 @@
-
-{% load static %}
-
-<link rel="stylesheet" type="text/css" href="{% static 'biketours/mystyle.css' %}">
-<div class="topnav">
-  <a class="active" href="/">Home</a>
-  <a href="../admin">Admin</a>
-</div>
+{% extends 'biketours/base.html' %}
+{% block content %}
+<div id='test' style='display:none'>
 <body>
-<h1> {{a}} </h1>
+<h1>  </h1>
+<!-- {% for k in stat_y_act %} -->
+<!-- <tr> -->
+	<!-- <td>{{k}} </td> -->
+<!-- </tr> -->
+<!-- {% endfor %} -->
+<button type="button" onclick="document.getElementById('test').style.display='none'">Hide</button>
+<div id="container_dist"></div>
+<br>
+<!-- <div id="container_dist"></div> -->
+<br>
+<div id="container_deniv"></div>
+<script src="https://code.highcharts.com/highcharts.src.js"></script>
+<script>
+  Highcharts.chart('container_dist', {{ dist|safe }});
+  <!-- Highcharts.chart('container', { -->
+      <!-- chart: { -->
+          <!-- type: 'column' -->
+      <!-- }, -->
+      <!-- title: { -->
+          <!-- text: 'Valeurs' -->
+      <!-- }, -->
+      <!-- xAxis: { -->
+          <!-- categories: ["a", "b", "c" -->
+            <!-- {% for entry in dataset %}'{{ entry.ticket_class }} Class'{% if not forloop.last %}, {% endif %}{% endfor %} -->
+          <!-- ] -->
+      <!-- }, -->
+      <!-- series: [{ -->
+          <!-- name: 'Survived', -->
+          <!-- data: [25, 150, 34 -->
+            <!-- {% for entry in dataset %}{{ entry.survived_count }}{% if not forloop.last %}, {% endif %}{% endfor %} -->
+          <!-- ], -->
+          <!-- color: 'green' -->
+      <!-- }, { -->
+          <!-- name: 'Not survived', -->
+          <!-- data: [18, 22, 45 -->
+            <!-- {% for entry in dataset %}{{ entry.not_survived_count }}{% if not forloop.last %}, {% endif %}{% endfor %} -->
+          <!-- ], -->
+          <!-- color: 'red' -->
+      <!-- }] -->
+  <!-- }); -->
+</script>
+<!-- <script> -->
+  <!-- Highcharts.chart('container_time', {{ time|safe }}); -->
+<!-- </script> -->
+ <script>
+  Highcharts.chart('container_deniv', {{ deniv|safe }});
+</script>
 </body>
+</div>
+<button type="button" onclick="document.getElementById('test').style.display='block'">Show</button>
+{% endblock %}
