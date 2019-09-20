@@ -1,15 +1,23 @@
 {% extends 'biketours/base.html' %}
 {% block content %}
+<body>
+<h1> {{t}}  </h1>
+<div id="container_dist"></div>
+<br>
+<!-- <div id="container_dist"></div> -->
+<br>
+<div id="container_deniv"></div>
+<script src="https://code.highcharts.com/highcharts.src.js"></script>
+<script>
+  Highcharts.chart('container_dist', {{ dist|safe }});
 
-<h1> {{title}} </h1>
-<br><br>
-	{% if image %}
-	<p><img src="{% static 'biketours/images/comp_date.png' %}" alt="Test" ></p>
-	
-	<br>
-	<p>"{{image}}"</p>
-	{% else %}
-		<h1> C'est vide ? .... </h1>
-	{% endif %}
+</script>
+<!-- <script> -->
+  <!-- Highcharts.chart('container_time', {{ time|safe }}); -->
+<!-- </script> -->
+ <script>
+  Highcharts.chart('container_deniv', {{ deniv|safe }});
+</script>
+</body>
 {% endblock %}
 	

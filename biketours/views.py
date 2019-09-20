@@ -6,8 +6,6 @@ from .forms import AdaptForm
 from django.db.models import Sum, Avg, Max, Min, Count, Q
 import json
 
-from . import test
-from . import graph
 from . import importDB
 
 #from matplotlib import pylab
@@ -155,7 +153,6 @@ def det_perf(request, perf_id): ## A DEVELOPPER : QUE MONTRER ??? AUTRES PERFORM
 ## Stats comparaison jour 
     
 def stat_comp(request):
-    
     # valeurs totales : année en cours + moyenne 3 dernières années
     stat_comp = comp_today()
     
@@ -190,7 +187,6 @@ def month(request):
     return render(request, "biketours/stat_month_index.html", context)
 
 def stat_month(request, mth_id): 
-    
     data_y = Perfo.objects.filter(Date__month=mth_id)
     
     # valeurs totales : mois en cours + moyenne 3 dernières années
@@ -273,54 +269,99 @@ def stat_act(request, act_id):
     return render(request, "biketours/stat_act.html", context)
 
 #### 3. Graph A DEVELOPPER !!!
+
+def prep_JSON(qset):
+    type_bike=list()
+    ser_dist=list()
+    ser_time=list()
+    ser_deniv=list()
+        
+    for y in qset.filter(Date__year__gte=2008).dates("Date", "year", order="DESC") :
+        data_y = qset.filter(Date__year=y.year)
+        tmp=dict()
+        dist_bike=list()
+        time_bike=list()
+        deniv_bike=list()
+        for t in Type.objects.values_list("pk", flat=True) :
+            l_t = BikeTour.objects.filter(Type=t).values_list("pk", flat=True)
+            tp = Type.objects.get(pk=t).Type
+            tmp[tp] = data_y.filter(Refparcours__in = l_t).aggregate(Nb=Count("Distance"), Distance_tot=Sum("Distance"), Temps_tot=Sum("Temps"), Dénivelé_tot=Sum("Dénivelé"))
+            if tp not in type_bike:
+                    type_bike.append(tp)
+            dist_bike.append(tmp[tp]["Distance_tot"])
+#            time_bike.append(tmp[tp]["Temps_tot"].total_seconds())
+            deniv_bike.append(tmp[tp]["Dénivelé_tot"])
+        
+        serie = {'name': y.year,
+                 'data': dist_bike,
+#                 'color': 'blue',
+                 'dataLabels': {
+                         'enabled': True}}
+        ser_dist.append(serie)
+        
+#        serie = {'name': y.year,
+#                 'data': time_bike,
+#                 'color': 'red'}
+#        ser_time.append(serie)
+#        
+        serie = {'name': y.year,
+                 'data': deniv_bike,
+#                 'color': 'green'
+                }
+        ser_deniv.append(serie)
+                    
+    chart = {
+        'chart': {'type': 'column'},
+        'title': {'text': 'Distance par activité'},
+        'xAxis': {'categories': type_bike},
+        'series': ser_dist
+    }
+      
+    dist = json.dumps(chart)
+
+#    chart = {
+#        'chart': {'type': 'column'},
+#        'title': {'text': 'Distance par activité'},
+#        'xAxis': {'categories': type_bike},
+#        'series': ser_time
+#    }
+#      
+#    time = json.dumps(chart)
+
+    chart = {
+        'chart': {'type': 'column'},
+        'title': {'text': 'Dénivelé par activité'},
+        'xAxis': {'categories': type_bike},
+        'series': ser_deniv
+    }
+      
+    deniv = json.dumps(chart)
+
+    context = {"dist":dist,
+    #               "time":time,
+               "deniv":deniv}
     
+    return context
+
+
 def graph_year(request):
-    title="Totaux annuels"
-    image = 'comp_y.png'
-    context = {"image":image,
-               "title":title}
+    context = prep_JSON(Perfo.objects.all())
+    context.update({"t":"Valeurs annuelles"})
     return render(request, "biketours/graph.html" ,context)
 
 def graph_month(request):
-    title="Mois courant"
-    image = 'comp_m.png'
-    context = {"image":image,
-               "title":title}
+    dt=datetime.date.today()
+    flt=Q(Date__month=dt.month)
+    context = prep_JSON(Perfo.objects.filter(flt))
+    context.update({"t":"Valeurs mois courant"})
     return render(request, "biketours/graph.html" ,context)
 
 def graph_comp(request):
-    title="Comparaison date actuelle"
-    data=graph.prepa_data()
-    gr=graph.gr_courant(data)
-    image = 'comp_date.png'
-    context = {"image":image,
-               "title":title,
-               "gr":gr,
-               "data":data}
+    dt=datetime.date.today()
+    flt=Q(Date__month__lt=dt.month)|(Q(Date__day__lte=dt.day)&Q(Date__month=dt.month))
+    context = prep_JSON(Perfo.objects.filter(flt))
+    context.update({"t":"Valeurs au "+str(dt)})
     return render(request, "biketours/graph.html" ,context)
-
-    
-#def showimage(request):
-#    # Construct the graph
-#    t = arange(0.0, 2.0, 0.01)
-#    s = sin(2*pi*t)
-#    plot(t, s, linewidth=1.0)
-# 
-#    xlabel('time (s)')
-#    ylabel('voltage (mV)')
-#    title('About as simple as it gets, folks')
-#    grid(True)
-# 
-#    # Store image in a string buffer
-#    buffer = StringIO.StringIO()
-#    canvas = pylab.get_current_fig_manager().canvas
-#    canvas.draw()
-#    pilImage = PIL.Image.frombytes("RGB", canvas.get_width_height(), canvas.tostring_rgb())
-#    pilImage.save(buffer, "PNG")
-#    pylab.close()
-# 
-#    # Send buffer in a http response the the browser with the mime type image/png set
-#    return HttpResponse(buffer.getvalue(), content_type="image/png")
 
 ##### 4. Input données
 
@@ -401,7 +442,7 @@ def tests(request):
         for t in Type.objects.values_list("pk", flat=True) :
             l_t = BikeTour.objects.filter(Type=t).values_list("pk", flat=True)
             tp = Type.objects.get(pk=t).Type
-            tmp[tp] = data_y.filter(Refparcours__in = l_t).aggregate(Nb=Count("Distance"), Distance_tot=Sum("Distance"), Temps_tot=Sum("Temps"), Dénivelé_tot=Sum("Dénivelé"))
+            tmp[tp] = agrperfo(data_y.filter(Refparcours__in = l_t), stat="sum")
             if tp not in type_bike:
                     type_bike.append(tp)
             dist_bike.append(tmp[tp]["Distance_tot"])
