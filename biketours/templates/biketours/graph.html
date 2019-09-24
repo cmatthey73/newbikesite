@@ -2,19 +2,19 @@
 {% block content %}
 <body>
 <h1> {{t}}  </h1>
-<div id="container_dist"></div>
-<br>
-<!-- <div id="container_dist"></div> -->
-<br>
-<div id="container_deniv"></div>
-<script src="https://code.highcharts.com/highcharts.src.js"></script>
+<div>
+<div class="container" id="container_time"></div>
+<div class="container" id="container_dist"></div>
+<div class="container" id="container_deniv"></div>
+</div>
+
+<script>
+  Highcharts.chart('container_time', {{ time|safe }});
+</script>
 <script>
   Highcharts.chart('container_dist', {{ dist|safe }});
 
 </script>
-<!-- <script> -->
-  <!-- Highcharts.chart('container_time', {{ time|safe }}); -->
-<!-- </script> -->
  <script>
   Highcharts.chart('container_deniv', {{ deniv|safe }});
 </script>

@@ -288,21 +288,29 @@ def prep_JSON(qset):
             tmp[tp] = data_y.filter(Refparcours__in = l_t).aggregate(Nb=Count("Distance"), Distance_tot=Sum("Distance"), Temps_tot=Sum("Temps"), Dénivelé_tot=Sum("Dénivelé"))
             if tp not in type_bike:
                     type_bike.append(tp)
-            dist_bike.append(tmp[tp]["Distance_tot"])
-#            time_bike.append(tmp[tp]["Temps_tot"].total_seconds())
+            if not tmp[tp]["Distance_tot"] is None:
+                dist_bike.append(round(tmp[tp]["Distance_tot"],0))
+            else:
+                dist_bike.append(0)
+            if not tmp[tp]["Temps_tot"] is None:
+                time_bike.append(round(tmp[tp]["Temps_tot"].total_seconds()/3600,1))
+            else :
+                time_bike.append(0)
             deniv_bike.append(tmp[tp]["Dénivelé_tot"])
         
         serie = {'name': y.year,
                  'data': dist_bike,
 #                 'color': 'blue',
-                 'dataLabels': {
-                         'enabled': True}}
+#                 'dataLabels': {
+#                         'enabled': True}
+                 }
         ser_dist.append(serie)
         
-#        serie = {'name': y.year,
-#                 'data': time_bike,
-#                 'color': 'red'}
-#        ser_time.append(serie)
+        serie = {'name': y.year,
+                 'data': time_bike,
+#                 'color': 'red'
+                 }
+        ser_time.append(serie)
 #        
         serie = {'name': y.year,
                  'data': deniv_bike,
@@ -319,14 +327,14 @@ def prep_JSON(qset):
       
     dist = json.dumps(chart)
 
-#    chart = {
-#        'chart': {'type': 'column'},
-#        'title': {'text': 'Distance par activité'},
-#        'xAxis': {'categories': type_bike},
-#        'series': ser_time
-#    }
-#      
-#    time = json.dumps(chart)
+    chart = {
+        'chart': {'type': 'column'},
+        'title': {'text': 'Temps par activité'},
+        'xAxis': {'categories': type_bike},
+        'series': ser_time
+    }
+      
+    time = json.dumps(chart)
 
     chart = {
         'chart': {'type': 'column'},
@@ -338,7 +346,7 @@ def prep_JSON(qset):
     deniv = json.dumps(chart)
 
     context = {"dist":dist,
-    #               "time":time,
+               "time":time,
                "deniv":deniv}
     
     return context

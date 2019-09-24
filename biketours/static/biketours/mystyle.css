@@ -53,7 +53,9 @@ h2 {
   
 
 /* OK JUSQU'ICI !!! */
-
+.container {
+    float: left;
+}
 
 .title1{
 	color: red;
