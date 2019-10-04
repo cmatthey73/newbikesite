@@ -44,6 +44,13 @@ h2 {
 	padding:5px;
 	
 }
+.col_4 {
+	/*border-right:1px solid black;*/
+	float:left;
+	width:24%;
+	padding:5px;
+	
+}
 .row:after{
 	content:"";
 	display:table;
@@ -54,7 +61,14 @@ h2 {
 
 /* OK JUSQU'ICI !!! */
 .container {
-    float: left;
+	float:left;
+	width:48%;
+	padding:5px;
+}
+.container:after{
+	content:"";
+	display:table;
+	clear:both;	
 }
 
 .title1{

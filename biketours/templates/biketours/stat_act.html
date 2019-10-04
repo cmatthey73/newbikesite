@@ -3,6 +3,8 @@
 
 <h1> Statistiques activité : {{act}} </h1>
 {% if stat_comp_act %}
+<div class="row">
+	<div class="col_2">
 	<table>
 		<tr>
 			<th colspan="2">Total {{act}}</th>
@@ -14,7 +16,8 @@
 		</tr>
 		{% endfor %}
 	</table>
-	<br>
+	</div>
+	<div class="col_2">
 	<table>
 		<tr>
 			<th colspan="2">Total {{act}} - moy last 3y</th>
@@ -26,13 +29,15 @@
 		</tr>
 		{% endfor %}
 	</table>
+	</div>
+</div>
 {% endif %}
 {% if stat_act_y %}
+<br>
 <div class="row">
-	<br>
 	
 		{% for k, v in stat_act_y.items %}
-		<div class="column">
+		<div class="col_4">
 		<table>
 			<tr>
 				<th colspan="3">{{k}} </th>

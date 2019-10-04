@@ -2,7 +2,6 @@
 {% block content %}
 
 <h1> Les liens suivants sont disponibles </h1>
-<br>
 {% if lst_link %}
 	<div class="index">
 	<ul>
@@ -17,9 +16,16 @@
 	{% else %}
 	<h1> Ils sont où les liens ? .... </h1>
 {% endif %}
-<br>
 {% if dt %}
 	<h2> Etat au {{dt|date:"SHORT_DATE_FORMAT"}} </h2>
+<div class="container" id="container_time"></div>
+<script>
+  Highcharts.chart('container_time', {{ chart_tot.time|safe }});
+</script>
+<br>
+
+	<div class="row">
+	<div class="col_2">
 	<table>
 		<tr>
 			<th colspan="2">Total vtt + route</th>
@@ -31,7 +37,8 @@
 		</tr>
 		{% endfor %}
 	</table>
-	<br>
+	</div>
+	<div class="col_2">
 	<table>
 		<tr>
 			<th colspan="2">Total vtt + route - moy last 3y</th>
@@ -43,9 +50,10 @@
 		</tr>
 		{% endfor %}
 	</table>
+	</div>
+	</div>
 <br>
 
 {% endif %}
-
 </body>
 {% endblock %}

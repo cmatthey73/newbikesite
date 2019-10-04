@@ -15,6 +15,8 @@
 </table>
 <br>
 {% if stat_comp_act %}
+<div class="row">
+	<div class="col_2">
 	<table>
 		<tr>
 			<th colspan="2">Total vtt + route {{year_id}}</th>
@@ -26,7 +28,8 @@
 		</tr>
 		{% endfor %}
 	</table>
-	<br>
+	</div>
+	<div class="col_2">
 	<table>
 		<tr>
 			<th colspan="2">Total vtt + route - moy last 3y {{year_id}}</th>
@@ -38,6 +41,8 @@
 		</tr>
 		{% endfor %}
 	</table>
+	</div>
+</div>
 {% endif %}
 <div class="row">
 <br>

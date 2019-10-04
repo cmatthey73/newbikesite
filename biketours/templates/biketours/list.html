@@ -1,0 +1,23 @@
+{% extends 'biketours/base.html' %}
+{% block content %}
+<h1> Les tours suivants ont été effectés </h1>
+<br>
+ 
+{% if list %}
+<table>
+		<tr>
+			<th colspan="2">Total vtt + route</th>
+		</tr>
+		{% for n in list %}
+		<tr>
+			<td>{{n.Refparcours}} </td>
+			<td>{{n.Date}} </td>
+			
+		</tr>
+		{% endfor %}
+</table>
+{% else %}
+	<h1> C'est vide ? .... </h1>
+{% endif %}
+{% endblock %}
+ 

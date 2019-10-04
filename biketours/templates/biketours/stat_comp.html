@@ -13,6 +13,8 @@
     });
  </script> 
 {% if stat_comp_act %}
+<div class="row">
+	<div class="col_2">
 	<table>
 		<tr>
 			<th colspan="2">Total vtt + route</th>
@@ -24,7 +26,8 @@
 		</tr>
 		{% endfor %}
 	</table>
-	<br>
+	</div>
+	<div class="col_2">
 	<table>
 		<tr>
 			<th colspan="2">Total vtt + route - moy last 3y</th>
@@ -36,6 +39,8 @@
 		</tr>
 		{% endfor %}
 	</table>
+	</div>
+</div>
 	<br>
 	<div class="row">
 	{% for a,b in stat_comp_act_y.items %}

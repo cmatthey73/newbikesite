@@ -7,3 +7,4 @@ Created on Fri Jun  7 15:51:14 2019
 
 def niet():
     return("niet")
+

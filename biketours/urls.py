@@ -7,6 +7,7 @@ urlpatterns = [
     re_path(r"^tours/$", views.index_tours, name="index_tours"),
     re_path(r"^graph/$", views.index_graph, name="index_graph"),
     re_path(r"^stat/$", views.index_stat, name="index_stat"),
+    re_path(r"^list/$", views.index_list, name="index_list"),
     ## performances
     # objectif : lier aux tours et afficher perf liées !!!
     re_path(r"^tours/(?P<tour_id>[0-9]+)/$", views.perf_tours, name="perf_tours"),
@@ -27,6 +28,11 @@ urlpatterns = [
     re_path(r"^graph/year/$", views.graph_year, name="graph_year"),
     re_path(r"^graph/month/$", views.graph_month, name="graph_month"),
     re_path(r"^graph/comp/$", views.graph_comp, name="graph_comp"),
+    
+    ## listes
+    re_path(r"^list/month/$", views.month, name="month"),
+    re_path(r"^list/month/(?P<mth_id>[0-9]+)/$", views.list_m, name="list_m"),
+    re_path(r"^list/act/$", views.list_act, name="list_act"),
     
     ## intro
     re_path(r"^input/$", views.datainput, name="datainput"),
