@@ -524,13 +524,21 @@ def graph_comp(request):
 ##### 4. Listes
 
 def list_m(request, mth_id):
-    list = Perfo.objects.filter(Date__month=mth_id)
-    context = {"list":list}
+    list_m = Perfo.objects.filter(Date__month=mth_id)
+    list_m_y = dict()
+    for y in Perfo.objects.dates("Date", "year", order="DESC") :
+        list_m_y[y.year] = list_m.filter(Date__year=y.year).order_by("Date")
+    context = {"list":list_m_y}
     return render(request, "biketours/list.html" ,context)
 
-def list_act(request):
-    list = Perfo.objects.all()
-    context = {"list":list}
+def list_act(request, act_id):
+    tours = BikeTour.objects.filter(Type=act_id)
+    tours = tours.values_list('id', flat=True).order_by('id')
+    list_a = Perfo.objects.filter(Refparcours__in = tours)
+    list_a_y = dict()
+    for y in Perfo.objects.dates("Date", "year", order="DESC") :
+        list_a_y[y.year] = list_a.filter(Date__year=y.year).order_by("Date")
+    context = {"list":list_a_y}
     return render(request, "biketours/list.html" ,context)
     
 ##### 5. Input données
