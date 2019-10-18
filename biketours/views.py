@@ -362,18 +362,16 @@ def perf_tours(request, tour_id):
                "tour":tour}
     return render(request, "biketours/perfo.html" ,context)
 
-def det_perf(request, perf_id): ## A DEVELOPPER : QUE MONTRER ??? AUTRES PERFORMANCES LIEES AU MEME TOUR ???
+def det_perf(request, perf_id): 
     perf = Perfo.objects.get(pk=perf_id)
     perf_old = agrperfo(Perfo.objects.filter(Refparcours=perf.Refparcours), stat="avg")
-    if request.method == "POST":
-        form = AdaptForm(request.POST, instance=perf) # instance = ... permet de mettre à jour une données existante !
-    else:
-        form = AdaptForm(initial={"Refparcours" : perf.Refparcours,
-                                  "Remarques" : perf.Remarques}, instance=perf)
+    if request.method == "POST": # au moment du renvoi du formulaire
+        form = AdaptForm(request.POST, instance=perf)# instance = ... permet de mettre à jour une données existante !
+        if form.is_valid(): 
+            form.save()
+    else: # au moment du 1er appel de la view
+        form = AdaptForm(instance=perf)
                # initial = ... permet de de donner des valeurs initiales (ici celles de perf) !
-        
-    if form.is_valid(): 
-        form.save()
             
     context = {"perf":perf,
                "perf_old":perf_old,
@@ -528,7 +526,9 @@ def list_m(request, mth_id):
     list_m_y = dict()
     for y in Perfo.objects.dates("Date", "year", order="DESC") :
         list_m_y[y.year] = list_m.filter(Date__year=y.year).order_by("Date")
-    context = {"list":list_m_y}
+    context = {"list":list_m_y,
+				"type":"mois",
+				"det":mth_id}
     return render(request, "biketours/list.html" ,context)
 
 def list_act(request, act_id):
@@ -538,7 +538,9 @@ def list_act(request, act_id):
     list_a_y = dict()
     for y in Perfo.objects.dates("Date", "year", order="DESC") :
         list_a_y[y.year] = list_a.filter(Date__year=y.year).order_by("Date")
-    context = {"list":list_a_y}
+    context = {"list":list_a_y,
+				"type":"activité",
+				"det":Type.objects.filter(pk=act_id)}
     return render(request, "biketours/list.html" ,context)
     
 ##### 5. Input données

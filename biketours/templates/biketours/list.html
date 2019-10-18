@@ -1,12 +1,12 @@
 {% extends 'biketours/base.html' %}
 {% block content %}
 {% load humanize %}
-<h1> Les tours suivants ont été effectés </h1>
+<h1> Les tours suivants ont été effectués ({{type}} : {{det}}) </h1>
 <br>
  
 {% if list %}
 {% for k,v in list.items %}
-<div id='test' style='display:none'>
+<div id='test_{{k}}' style='display:none'>
 <table>
 		<tr>
 			<th colspan="2">{{k}}</th>
@@ -35,9 +35,9 @@
 		{%endfor %}	
 
 </table>
-<button type="button" onclick="document.getElementById('test').style.display='none'">Hide</button>
+<button type="button" onclick="document.getElementById('test_{{k}}').style.display='none'">Hide</button>
 </div>
-<button type="button" onclick="document.getElementById('test').style.display='block'">{{k}}</button>
+<button type="button" onclick="document.getElementById('test_{{k}}').style.display='block'">{{k}}</button>
 {% endfor %}
 {% else %}
 	<h1> C'est vide ? .... </h1>
