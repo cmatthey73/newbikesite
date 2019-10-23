@@ -1,17 +1,21 @@
 {% extends 'biketours/base.html' %}
 {% block content %}
 <!-- Fengyuan Chen's Datepicker -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/datepicker/0.6.5/datepicker.min.css" integrity="sha256-b88RdwbRJEzRx95nCuuva+hO5ExvXXnpX+78h8DjyOE=" crossorigin="anonymous" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/datepicker/0.6.5/datepicker.min.js" integrity="sha256-/7FLTdzP6CfC1VBAj/rsp3Rinuuu9leMRGd354hvk0k=" crossorigin="anonymous"></script>
+<!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/datepicker/0.6.5/datepicker.min.css" integrity="sha256-b88RdwbRJEzRx95nCuuva+hO5ExvXXnpX+78h8DjyOE=" crossorigin="anonymous" /> -->
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/datepicker/0.6.5/datepicker.min.js" integrity="sha256-/7FLTdzP6CfC1VBAj/rsp3Rinuuu9leMRGd354hvk0k=" crossorigin="anonymous"></script> -->
 
 <h1> Comparaison : {{dt|date:"SHORT_DATE_FORMAT" }} </h1>
 <!-- PARTIE FORM A ADAPTER POUR EFFECTUER COMPARAISON A LA DATE CHOISIE -->
-<input id="datepicker">
-<script>
-    $(function () {
-      $("#datepicker").datepicker();
-    });
- </script> 
+<form method="POST">{% csrf_token %}        
+    <h2>Date alternative : <input type="date"  name='alt_date' ></h2>
+    <button type="submit">Submit</button>
+</form>
+<!-- <input id="datepicker"> -->
+<!-- <script> -->
+    <!-- $(function () { -->
+      <!-- $("#datepicker").datepicker(); -->
+    <!-- }); -->
+ <!-- </script>  -->
 {% if stat_comp_act %}
 <div class="row">
 	<div class="col_2">

@@ -12,6 +12,7 @@
 			<th colspan="2">{{k}}</th>
 		</tr>
 		<tr>
+				<th>No</th>
 				<th>Nom</th>
 				<th>Date</th>
 				<th>Lien</th>
@@ -23,6 +24,7 @@
 		</tr>
 		{% for n in v %}
 		<tr>
+				<td>{{forloop.counter}}</td>
 				<td>{{n.Refparcours}}</td>
 				<td>{{n.Date}}</td>
 				<td><a href="./{{n.pk}}/">{{n.pk}} </a></td>

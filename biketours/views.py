@@ -71,6 +71,19 @@ def comp_today(): # comparaison à la date actuelle
                  "data":data_comp}
     return(stat_comp)
     
+def comp_anyday(dt): # comparaison à la date actuelle  
+    # dt doit être un datetime object !
+    flt=Q(Date__month__lt=dt.month)|(Q(Date__day__lte=dt.day)&Q(Date__month=dt.month))
+    data_comp = Perfo.objects.filter(flt)
+    tours = BikeTour.objects.filter(Type__in=[1, 2]).values_list('id', flat=True)
+    stat_comp_act=agrperfo(data_comp.filter(Q(Date__year=dt.year)&Q(Refparcours__in = tours)), stat="sum")
+    stat_comp_act_last=agrperfo(data_comp.filter(Q(Date__year__gte=(dt.year-3))&Q(Date__year__lt=dt.year)&Q(Refparcours__in = tours)), stat="avg_sub",  div=3)
+    stat_comp = {"dt":dt,
+                 "act":stat_comp_act,
+                 "last":stat_comp_act_last,
+                 "data":data_comp}
+    return(stat_comp)
+    
 def comp_any(qset, y=None): # autres comparaisons, comp gérée lors de la création de qset ! 
     if y is None:
         dt=datetime.date.today()
@@ -383,9 +396,17 @@ def det_perf(request, perf_id):
 ## Stats comparaison jour 
     
 def stat_comp(request):
-    # valeurs totales : année en cours + moyenne 3 dernières années
-    stat_comp = comp_today()
-    
+
+    if request.method == "POST": # au moment du renvoi du formulaire
+        dt = request.POST["alt_date"]
+        dt = datetime.datetime.strptime(dt, "%Y-%m-%d")
+        # valeurs totales : année en cours + moyenne 3 dernières années
+        stat_comp = comp_anyday(dt)
+    else: # au moment du 1er appel de la view
+        # valeurs totales : année en cours + moyenne 3 dernières années
+        stat_comp = comp_today()
+        dt=stat_comp["dt"]
+        
     # valeurs par activité, par année
     stat_comp_act_y = dict()
     for t in Type.objects.values_list("pk", flat=True) :
@@ -393,15 +414,16 @@ def stat_comp(request):
         data_comp_y = stat_comp["data"].filter(Refparcours__in = tours)
         tmp=dict()
         for y in Perfo.objects.dates("Date", "year", order="DESC") :
-            data_comp_act_y = data_comp_y.filter(Date__year=y.year)
-            tmp[y.year]= agrperfo(data_comp_act_y, stat="sum")
-        stat_comp_act_y[Type.objects.get(pk=t).Type] = tmp
+                data_comp_act_y = data_comp_y.filter(Date__year=y.year)
+                tmp[y.year]= agrperfo(data_comp_act_y, stat="sum")
+                stat_comp_act_y[Type.objects.get(pk=t).Type] = tmp
         
     context = {
-               "dt":stat_comp["dt"],
+               "dt":dt,
                "stat_comp_act":stat_comp["act"],
                "stat_comp_act_last":stat_comp["last"],
-               "stat_comp_act_y":stat_comp_act_y}
+               "stat_comp_act_y":stat_comp_act_y
+               }
     return render(request, "biketours/stat_comp.html", context)
 
 ## Stats mensuelles 
@@ -540,7 +562,7 @@ def list_act(request, act_id):
         list_a_y[y.year] = list_a.filter(Date__year=y.year).order_by("Date")
     context = {"list":list_a_y,
 				"type":"activité",
-				"det":Type.objects.filter(pk=act_id)}
+				"det":Type.objects.get(pk=act_id).Type}
     return render(request, "biketours/list.html" ,context)
     
 ##### 5. Input données

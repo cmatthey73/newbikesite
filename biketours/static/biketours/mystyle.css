@@ -6,7 +6,7 @@ body {
   margin-left: 40px;
   margin-right: 40px;
 }
-table, th, td {
+table {
   width: 100%; 
   border-bottom: 1px solid #ddd;
   border-collapse: collapse;
@@ -14,6 +14,13 @@ table, th, td {
   background-color: white;
   font-size:80%;
   table-layout: auto;
+}
+th, td {
+  border-bottom: 1px solid #ddd;
+  border-collapse: collapse;
+  text-align: left;
+  background-color: white;
+  font-size:80%;
 }
 h1 {
   color: white;
