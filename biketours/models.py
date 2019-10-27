@@ -96,3 +96,11 @@ class Perfo(models.Model):
     def __str__(self): 
         # représentation de l'objet si print => permet ici d'afficher Parcours - Variante dans les autres tables liées et également sur liens url
         return(str(self.Refparcours) + " - " + str(self.Date) + " - " + str(self.Temps)+ " - " + str(self.Distance))
+
+    def moy(self):
+        if (self.Distance is None or self.Temps is None) :
+            vmoy=None
+        else :
+            vmoy=round(self.Distance/self.Temps.total_seconds()*3600,2)
+        return(vmoy)
+
