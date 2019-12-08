@@ -68,7 +68,10 @@ def import_garmin(garm_csv):
     df.loc[(df["Type_d'activité"].str.upper() == "INDOOR_CYCLING") & (df["Titre"].str.upper() == "SPINNING"),"Refparcours_id"]=tours_DB.loc[(tours_DB["Parcours"].str.upper() == "SPINNING") ,"id"].iloc[0] 
     df.loc[(df["Type_d'activité"].str.upper() == "INDOOR_CYCLING") & (df["Titre"].str.upper() != "SPINNING"),"Refparcours_id"]=tours_DB.loc[(tours_DB["Parcours"].str.upper() == "HOMETRAINER") ,"id"].iloc[0] 
     df.loc[(df["Type_d'activité"].str.upper().str.match(r".+_RUNNING$")) ,"Refparcours_id"]=tours_DB.loc[(tours_DB["Type"] == "cap" ) ,"id"].iloc[0] 
-    
+    # valeur None pour Vitesse max si course ou hometrainer 
+    df.loc[(df["Type_d'activité"].str.upper().str.match(r".+_RUNNING$")) ,"Vitesse_max"]=None
+    df.loc[(df["Type_d'activité"].str.upper() == "INDOOR_CYCLING"),"Vitesse_max"]=None
+        
     df["Refparcours_id"].value_counts(dropna=False)
 
     # ------------ cas VTT et ROUTE : attribution directe si 1 seule variante

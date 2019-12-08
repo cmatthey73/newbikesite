@@ -58,11 +58,14 @@ def agrperfo(qset, stat="sum", div=3): # calcul des résultats agrégés (perfo)
     res_form={k:fmt_dct(k, v) for k , v in res.items() }
     return(res_form)
 
-def comp_today(): # comparaison à la date actuelle  
+def comp_today(restr=True): # comparaison à la date actuelle  
     dt=datetime.date.today()
     flt=Q(Date__month__lt=dt.month)|(Q(Date__day__lte=dt.day)&Q(Date__month=dt.month))
     data_comp = Perfo.objects.filter(flt)
-    tours = BikeTour.objects.filter(Type__in=[1, 2]).values_list('id', flat=True)
+    if restr:
+        tours = BikeTour.objects.filter(Type__in=[1, 2]).values_list('id', flat=True)
+    else:
+        tours = BikeTour.objects.values_list('id', flat=True)
     stat_comp_act=agrperfo(data_comp.filter(Q(Date__year=dt.year)&Q(Refparcours__in = tours)), stat="sum")
     stat_comp_act_last=agrperfo(data_comp.filter(Q(Date__year__gte=(dt.year-3))&Q(Date__year__lt=dt.year)&Q(Refparcours__in = tours)), stat="avg_sub",  div=3)
     stat_comp = {"dt":dt,
@@ -71,11 +74,14 @@ def comp_today(): # comparaison à la date actuelle
                  "data":data_comp}
     return(stat_comp)
     
-def comp_anyday(dt): # comparaison à la date actuelle  
+def comp_anyday(dt, restr=True): # comparaison à la date dt  
     # dt doit être un datetime object !
     flt=Q(Date__month__lt=dt.month)|(Q(Date__day__lte=dt.day)&Q(Date__month=dt.month))
     data_comp = Perfo.objects.filter(flt)
-    tours = BikeTour.objects.filter(Type__in=[1, 2]).values_list('id', flat=True)
+    if restr:
+        tours = BikeTour.objects.filter(Type__in=[1, 2]).values_list('id', flat=True)
+    else:
+        tours = BikeTour.objects.values_list('id', flat=True)
     stat_comp_act=agrperfo(data_comp.filter(Q(Date__year=dt.year)&Q(Refparcours__in = tours)), stat="sum")
     stat_comp_act_last=agrperfo(data_comp.filter(Q(Date__year__gte=(dt.year-3))&Q(Date__year__lt=dt.year)&Q(Refparcours__in = tours)), stat="avg_sub",  div=3)
     stat_comp = {"dt":dt,
@@ -84,13 +90,16 @@ def comp_anyday(dt): # comparaison à la date actuelle
                  "data":data_comp}
     return(stat_comp)
     
-def comp_any(qset, y=None): # autres comparaisons, comp gérée lors de la création de qset ! 
+def comp_any(qset, y=None, restr=True): # autres comparaisons, comp gérée lors de la création de qset ! 
     if y is None:
         dt=datetime.date.today()
     else:
         dt=datetime.date(int(y),1,1)
     data_comp = qset
-    tours = BikeTour.objects.filter(Type__in=[1, 2]).values_list('id', flat=True)
+    if restr:
+        tours = BikeTour.objects.filter(Type__in=[1, 2]).values_list('id', flat=True)
+    else:
+        tours = BikeTour.objects.values_list('id', flat=True)
     stat_comp_act=agrperfo(data_comp.filter(Q(Date__year=dt.year)&Q(Refparcours__in = tours)), stat="sum")
     stat_comp_act_last=agrperfo(data_comp.filter(Q(Date__year__gte=(dt.year-3))&Q(Date__year__lt=dt.year)&Q(Refparcours__in = tours)), stat="avg_sub",  div=3)
     stat_comp = {"dt":dt,
@@ -505,7 +514,7 @@ def stat_act(request, act_id):
     tours = BikeTour.objects.filter(Type=act_id)
     tours = tours.values_list('id', flat=True).order_by('id')
     data_act = Perfo.objects.filter(Refparcours__in = tours)
-    stat_comp=comp_any(data_act)
+    stat_comp=comp_any(data_act, restr=False)
         
     # valeurs par activité, par année
     stat_act_y = dict()
