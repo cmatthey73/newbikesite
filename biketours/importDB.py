@@ -13,12 +13,20 @@ def import_garmin(garm_csv):
     import datetime
     import numpy as np
 
+#    garm_csv="Activities_24022020.csv"
     df = pd.read_csv("C:/Users/chris/Documents/"+garm_csv, header=0, sep=",")
     df.columns=df.columns.str.replace(" ","_") # suppression espaces !
     df.columns
     df.dtypes
+    
+    # Traitement des potentielles colonnes manquantes
+    col_mis=["Fréquence_cardiaque_moyenne", "Fréquence_cardiaque_maximale", "Distance", "Gain_alt"]
+    for c in col_mis:
+        if c not in df.columns:
+           df[c]=None
 
-    df["Gain_alt"]=df["Gain_alt"].str.replace(",","")
+    # Transformation champ Gain_alt
+    df["Gain_alt"]=df["Gain_alt"].apply(str).str.replace(",","")
 
     # Transformation champ Date
     df["Date"]=pd.to_datetime(df["Date"], yearfirst=True) 
@@ -65,12 +73,12 @@ def import_garmin(garm_csv):
     conn.close()
 
     # ------------ cas HT et CAP
-    df.loc[(df["Type_d'activité"].str.upper() == "INDOOR_CYCLING") & (df["Titre"].str.upper() == "SPINNING"),"Refparcours_id"]=tours_DB.loc[(tours_DB["Parcours"].str.upper() == "SPINNING") ,"id"].iloc[0] 
-    df.loc[(df["Type_d'activité"].str.upper() == "INDOOR_CYCLING") & (df["Titre"].str.upper() != "SPINNING"),"Refparcours_id"]=tours_DB.loc[(tours_DB["Parcours"].str.upper() == "HOMETRAINER") ,"id"].iloc[0] 
-    df.loc[(df["Type_d'activité"].str.upper().str.match(r".+_RUNNING$")) ,"Refparcours_id"]=tours_DB.loc[(tours_DB["Type"] == "cap" ) ,"id"].iloc[0] 
+    df.loc[(df["Type_d'activité"].str.upper().isin (["INDOOR_CYCLING", "VELO D'INTERIEUR"])) & (df["Titre"].str.upper() == "SPINNING"),"Refparcours_id"]=tours_DB.loc[(tours_DB["Parcours"].str.upper() == "SPINNING") ,"id"].iloc[0] 
+    df.loc[(df["Type_d'activité"].str.upper().isin (["INDOOR_CYCLING", "VELO D'INTERIEUR"])) & (df["Titre"].str.upper() != "SPINNING"),"Refparcours_id"]=tours_DB.loc[(tours_DB["Parcours"].str.upper() == "HOMETRAINER") ,"id"].iloc[0] 
+    df.loc[(df["Type_d'activité"].str.upper().str.match(r"(^COURSE.+PIED|^TRAIL|.+_RUNNING$)")) ,"Refparcours_id"]=tours_DB.loc[(tours_DB["Type"] == "cap" ) ,"id"].iloc[0] 
     # valeur None pour Vitesse max si course ou hometrainer 
-    df.loc[(df["Type_d'activité"].str.upper().str.match(r".+_RUNNING$")) ,"Vitesse_max"]=None
-    df.loc[(df["Type_d'activité"].str.upper() == "INDOOR_CYCLING"),"Vitesse_max"]=None
+    df.loc[(df["Type_d'activité"].str.upper().str.match(r"(^COURSE.+PIED|^TRAIL|.+_RUNNING$)")) ,"Vitesse_max"]=None
+    df.loc[(df["Type_d'activité"].str.upper().isin (["INDOOR_CYCLING", "VELO D'INTERIEUR"])),"Vitesse_max"]=None
         
     df["Refparcours_id"].value_counts(dropna=False)
 
@@ -78,13 +86,13 @@ def import_garmin(garm_csv):
     uniques=tours_DB.groupby(["Parcours"])["Variante"].count()
     uniques=uniques[uniques<=1]
         
-    catGAR=["mountain_biking","road_biking"]
-    typeDB=["vtt","route"]
+    catGAR=["mountain_biking","VTT","road_biking", "Cyclisme sur route"]
+    typeDB=["vtt","vtt","route","route"]
     lst=zip(catGAR, typeDB)
 
     for gar, db in lst:
         ref=tours_DB.loc[(tours_DB["Type"]==db) & (tours_DB["Parcours"].isin(uniques.index.tolist())) , :]
-        default=tours_DB.loc[tours_DB["Parcours"].str.match(db+"_?"),"id"]
+        default=tours_DB.loc[tours_DB["Parcours"].str.match(db+"_\?"),"id"]
         print(default)
         for t in ref.itertuples(index=False):
     #        print(t)
@@ -92,7 +100,11 @@ def import_garmin(garm_csv):
             df.loc[(df["Type_d'activité"]==gar) & (df["Titre"]==t.Parcours), "Refparcours_id"]=t.id
         df.loc[(df["Type_d'activité"]==gar) & (pd.isnull(df["Refparcours_id"])), "Refparcours_id"]=default.iloc[0] 
         #pas ok car default = Series => extraire chiffre
-            
+    
+    # ------------ cas non traité ailleurs => cas ?_?
+    default=tours_DB.loc[tours_DB["Parcours"].str.match("\?_\?"),"id"]
+    df.loc[pd.isnull(df["Refparcours_id"]), "Refparcours_id"]=default.iloc[0]
+        
     df["Refparcours_id"].value_counts(dropna=False)
     
     # Chargement

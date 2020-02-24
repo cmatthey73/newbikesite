@@ -471,7 +471,7 @@ import datetime
 import re
 import numpy as np
 
-df = pd.read_csv("C:/Users/chris/Documents/Activities_28082019.csv", header=0, sep=",")
+df = pd.read_csv("C:/Users/chris/Documents/Activities_13012020.csv", header=0, sep=",")
 df.columns=df.columns.str.replace(" ","_") # suppression espaces !
 df.columns
 df.dtypes
@@ -483,6 +483,12 @@ df["Date"]=pd.to_datetime(df["Date"], yearfirst=True)
 df=df.sort_values(by=["Date"], ascending=True)
 df["Date"]=df["Date"].map(lambda x: x.date()) 
 df.dtypes
+
+## Traitement si colonne manquante
+#col_mis=["Fréquence_cardiaque_moyenne", "Fréquence_cardiaque_maximale", "Distance"]
+#for c in col_mis:
+#    if c not in df.columns:
+#       df[c]=None
 
 # Transformation champs FC
 df[["Fréquence_cardiaque_moyenne",

@@ -45,6 +45,35 @@
 	</table>
 	</div>
 </div>
+<br>
+<div class="row">
+	<div class="col_2">
+	<table>
+		<tr>
+			<th colspan="2">Total</th>
+		</tr>
+		{% for k,v in stat_comp_all_act.items %}
+		<tr>
+			<td>{{k}} </td>
+			<td>{{v}} </td>
+		</tr>
+		{% endfor %}
+	</table>
+	</div>
+	<div class="col_2">
+	<table>
+		<tr>
+			<th colspan="2">Total - moy last 3y</th>
+		</tr>
+		{% for k,v in stat_comp_all_act_last.items %}
+		<tr>
+			<td>{{k}} </td>
+			<td>{{v}} </td>
+		</tr>
+		{% endfor %}
+	</table>
+	</div>
+</div>
 	<br>
 	<div class="row">
 	{% for a,b in stat_comp_act_y.items %}
