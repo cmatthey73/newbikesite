@@ -32,8 +32,10 @@ urlpatterns = [
     ## listes
     re_path(r"^list/month/$", views.month, name="month"),
     re_path(r"^list/month/(?P<mth_id>[0-9]+)/$", views.list_m, name="list_m"),
+    re_path(r"^list/month/[0-9]+/(?P<perf_id>[0-9]+)/$", views.det_perf, name="det_perf"),
     re_path(r"^list/act/$", views.activ, name="stat_act"),
     re_path(r"^list/act/(?P<act_id>[0-9]+)/$", views.list_act, name="list_act"),
+    re_path(r"^list/act/[0-9]+/(?P<perf_id>[0-9]+)/$", views.det_perf, name="det_perf"),
     
     ## intro
     re_path(r"^input/$", views.datainput, name="datainput"),

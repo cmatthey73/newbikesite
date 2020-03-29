@@ -98,25 +98,25 @@ def comp_any(qset, y=None, restr=True): # autres comparaisons, comp gérée lors
                  "data":data_comp}
     return(stat_comp)
     
-def comp_generic(qset, dt=None, y, restr=True): # autres comparaisons (année, mois => y), comp gérée lors de la création de qset !EN COURS
-    if dt is None:
-        dt=datetime.date(int(y),1,1)
-        data_comp = qset
-    else:
-        dt=dt
-        flt=Q(Date__month__lt=dt.month)|(Q(Date__day__lte=dt.day)&Q(Date__month=dt.month))
-        data_comp = qset.filter(flt)
-    if restr:
-        tours = BikeTour.objects.filter(Type__in=[1, 2]).values_list('id', flat=True)
-    else:
-        tours = BikeTour.objects.values_list('id', flat=True)
-    stat_comp_act=agrperfo(data_comp.filter(Q(Date__year=dt.year)&Q(Refparcours__in = tours)), stat="sum")
-    stat_comp_act_last=agrperfo(data_comp.filter(Q(Date__year__gte=(dt.year-3))&Q(Date__year__lt=dt.year)&Q(Refparcours__in = tours)), stat="avg_sub",  div=3)
-    stat_comp = {"dt":dt,
-                 "act":stat_comp_act,
-                 "last":stat_comp_act_last,
-                 "data":data_comp}
-    return(stat_comp)
+#def comp_generic(qset, dt=None, y, restr=True): # autres comparaisons (année, mois => y), comp gérée lors de la création de qset !EN COURS
+#    if dt is None:
+#        dt=datetime.date(int(y),1,1)
+#        data_comp = qset
+#    else:
+#        dt=dt
+#        flt=Q(Date__month__lt=dt.month)|(Q(Date__day__lte=dt.day)&Q(Date__month=dt.month))
+#        data_comp = qset.filter(flt)
+#    if restr:
+#        tours = BikeTour.objects.filter(Type__in=[1, 2]).values_list('id', flat=True)
+#    else:
+#        tours = BikeTour.objects.values_list('id', flat=True)
+#    stat_comp_act=agrperfo(data_comp.filter(Q(Date__year=dt.year)&Q(Refparcours__in = tours)), stat="sum")
+#    stat_comp_act_last=agrperfo(data_comp.filter(Q(Date__year__gte=(dt.year-3))&Q(Date__year__lt=dt.year)&Q(Refparcours__in = tours)), stat="avg_sub",  div=3)
+#    stat_comp = {"dt":dt,
+#                 "act":stat_comp_act,
+#                 "last":stat_comp_act_last,
+#                 "data":data_comp}
+#    return(stat_comp)
     
 def prep_JSON(qset, ylim=2008, sel=False): 
     type_bike=list()
