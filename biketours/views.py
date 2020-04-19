@@ -469,6 +469,7 @@ def stat_month(request, mth_id):
     
     # valeurs totales : mois en cours + moyenne 3 dernières années
     stat_comp=comp_any(data_y)
+    stat_comp_all=comp_any(data_y, restr=False)
         
     # valeurs mensuelles par activité, par année       
     stat_comp_act_y = dict()
@@ -484,6 +485,8 @@ def stat_month(request, mth_id):
     context={
              "stat_comp_act":stat_comp["act"],
              "stat_comp_act_last":stat_comp["last"],
+             "stat_comp_all_act":stat_comp_all["act"],
+             "stat_comp_all_act_last":stat_comp_all["last"],
              "stat_comp_act_y":stat_comp_act_y,
              "mth_id":mth_id}
     return render(request, "biketours/stat_month.html", context)
@@ -499,7 +502,8 @@ def stat_year(request, year_id):
     
     # valeurs totales : année en cours + moyenne 3 dernières années
     stat_comp=comp_any(Perfo.objects.all(), y=year_id)
-    
+    stat_comp_all=comp_any(Perfo.objects.all(), y=year_id, restr=False)
+        
     # valeurs annuelles
     data_y = Perfo.objects.filter(Date__year=year_id)
     stat_y = agrperfo(data_y, stat="sum")
@@ -514,6 +518,8 @@ def stat_year(request, year_id):
     context={
              "stat_comp_act":stat_comp["act"],
              "stat_comp_act_last":stat_comp["last"],
+             "stat_comp_all_act":stat_comp_all["act"],
+             "stat_comp_all_act_last":stat_comp_all["last"],
              "stat_y":stat_y,
              "stat_y_act":stat_y_act,
              "year_id":year_id}
