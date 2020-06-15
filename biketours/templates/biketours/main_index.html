@@ -18,9 +18,13 @@
 {% endif %}
 {% if dt %}
 	<h2> Etat au {{dt|date:"SHORT_DATE_FORMAT"}} </h2>
-<div class="container" id="container_time"></div>
+<div class="container" id="container_t"></div>
+<div class="container" id="container_t_l3"></div>
 <script>
-  Highcharts.chart('container_time', {{ chart_tot.time|safe }});
+Highcharts.chart('container_t', {{ chart_tot.chart_t|safe }});
+</script>
+<script>
+Highcharts.chart('container_t_l3', {{ chart_tot.chart_t_l3|safe }});
 </script>
 <br>
 
@@ -52,7 +56,6 @@
 	</table>
 	</div>
 	</div>
-<br>
 	<div class="row">
 	<div class="col_2">
 	<table>

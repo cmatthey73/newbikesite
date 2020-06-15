@@ -37,7 +37,7 @@ def v_moy(qset, suffix): # suffix à introduire manuellement (string)
         vmoy=qset["Distance"+suffix]/qset["Temps"+suffix].total_seconds()*3600
     return(vmoy)
 
-def agrperfo(qset, stat="sum", div=3): # calcul des résultats agrégés (perfo) + mise en forme
+def agrperfo(qset, stat="sum", div=3, form=True): # calcul des résultats agrégés (perfo) + mise en forme (! agrégation sur tout le queryset !)
     # calcul des résultats agrégés => res
     if stat=="sum":
         res=qset.aggregate(Nb=Count("Distance"), Distance_tot=Sum("Distance"), Temps_tot=Sum("Temps"), Dénivelé_tot=Sum("Dénivelé"))
@@ -54,21 +54,27 @@ def agrperfo(qset, stat="sum", div=3): # calcul des résultats agrégés (perfo)
             else :
                 res[k]=v/div
         res["Moyenne"]=v_moy(res, "_tot")
-    # mise en forme
-    res_form={k:fmt_dct(k, v) for k , v in res.items() }
+    # mise en forme si form=True
+    if form :
+        res_form={k:fmt_dct(k, v) for k , v in res.items() }
+    else :
+        res_form=res
     return(res_form)
     
 def comp_anyday(dt, restr=True): # comparaison à la date dt  
     # dt doit être un datetime object !
     # restr=True si types restreints à vtt et vélo de route
     flt=Q(Date__month__lt=dt.month)|(Q(Date__day__lte=dt.day)&Q(Date__month=dt.month))
-    data_comp = Perfo.objects.filter(flt)
+
     if restr:
-        tours = BikeTour.objects.filter(Type__in=[1, 2]).values_list('id', flat=True)
+        data_comp=Perfo.objects.filter(flt, Q(Refparcours__Type__in=[1, 2]))
+        stat_comp_act=agrperfo(Perfo.objects.filter(flt, Q(Refparcours__Type__in=[1, 2]), Q(Date__year=dt.year)), stat="sum")
+        stat_comp_act_last=agrperfo(Perfo.objects.filter(flt, Q(Refparcours__Type__in=[1, 2]), Q(Date__year__gte=(dt.year-3)), Q(Date__year__lt=dt.year)), stat="avg_sub",  div=3)
     else:
-        tours = BikeTour.objects.values_list('id', flat=True)
-    stat_comp_act=agrperfo(data_comp.filter(Q(Date__year=dt.year)&Q(Refparcours__in = tours)), stat="sum")
-    stat_comp_act_last=agrperfo(data_comp.filter(Q(Date__year__gte=(dt.year-3))&Q(Date__year__lt=dt.year)&Q(Refparcours__in = tours)), stat="avg_sub",  div=3)
+        data_comp=Perfo.objects.filter(flt)
+        stat_comp_act=agrperfo(Perfo.objects.filter(flt, Q(Date__year=dt.year)), stat="sum")
+        stat_comp_act_last=agrperfo(Perfo.objects.filter(flt, Q(Date__year__gte=(dt.year-3))&Q(Date__year__lt=dt.year)), stat="avg_sub",  div=3)
+
     stat_comp = {"dt":dt,
                  "act":stat_comp_act,
                  "last":stat_comp_act_last,
@@ -79,33 +85,13 @@ def comp_today(restr=True): # comparaison à la date actuelle
     dt=datetime.date.today()
     stat_comp=comp_anyday(dt=dt, restr=restr)
     return(stat_comp)
-    
-def comp_any(qset, y=None, restr=True): # autres comparaisons, comp gérée lors de la création de qset ! 
-    if y is None:
-        dt=datetime.date.today()
-    else:
-        dt=datetime.date(int(y),1,1)
-    data_comp = qset
-    if restr:
-        tours = BikeTour.objects.filter(Type__in=[1, 2]).values_list('id', flat=True)
-    else:
-        tours = BikeTour.objects.values_list('id', flat=True)
-    stat_comp_act=agrperfo(data_comp.filter(Q(Date__year=dt.year)&Q(Refparcours__in = tours)), stat="sum")
-    stat_comp_act_last=agrperfo(data_comp.filter(Q(Date__year__gte=(dt.year-3))&Q(Date__year__lt=dt.year)&Q(Refparcours__in = tours)), stat="avg_sub",  div=3)
-    stat_comp = {"dt":dt,
-                 "act":stat_comp_act,
-                 "last":stat_comp_act_last,
-                 "data":data_comp}
-    return(stat_comp)
-    
-#def comp_generic(qset, dt=None, y, restr=True): # autres comparaisons (année, mois => y), comp gérée lors de la création de qset !EN COURS
-#    if dt is None:
-#        dt=datetime.date(int(y),1,1)
-#        data_comp = qset
+
+#def comp_anyOLD(qset, y=None, restr=True): # autres comparaisons, comp gérée lors de la création de qset ! 
+#    if y is None:
+#        dt=datetime.date.today()
 #    else:
-#        dt=dt
-#        flt=Q(Date__month__lt=dt.month)|(Q(Date__day__lte=dt.day)&Q(Date__month=dt.month))
-#        data_comp = qset.filter(flt)
+#        dt=datetime.date(int(y),1,1)
+#    data_comp = qset
 #    if restr:
 #        tours = BikeTour.objects.filter(Type__in=[1, 2]).values_list('id', flat=True)
 #    else:
@@ -118,15 +104,33 @@ def comp_any(qset, y=None, restr=True): # autres comparaisons, comp gérée lors
 #                 "data":data_comp}
 #    return(stat_comp)
     
-def prep_JSON(qset, ylim=2008, sel=False): 
+def comp_any(filt, y=None, restr=True): # autres comparaisons basées sur perfo, filtre initial à renseigner ! 
+    if y is None:
+        dt=datetime.date.today()
+    else:
+        dt=datetime.date(int(y),1,1)
+
+    if restr: 
+        data=Perfo.objects.filter(filt, Q(Refparcours__Type__in=[1, 2]))
+        stat_comp_act=agrperfo(Perfo.objects.filter(filt, Q(Date__year=dt.year), Q(Refparcours__Type__in=[1, 2])), stat="sum")
+        stat_comp_act_last=agrperfo(Perfo.objects.filter(filt, Q(Date__year__gte=(dt.year-3)), Q(Date__year__lt=dt.year), Q(Refparcours__Type__in=[1, 2])), stat="avg_sub",  div=3)
+    else:
+        data=Perfo.objects.filter(filt)
+        stat_comp_act=agrperfo(Perfo.objects.filter(filt, Q(Date__year=dt.year)), stat="sum")
+        stat_comp_act_last=agrperfo(Perfo.objects.filter(filt, Q(Date__year__gte=(dt.year-3)), Q(Date__year__lt=dt.year)), stat="avg_sub",  div=3)
+
+    stat_comp = {"dt":dt,
+                 "act":stat_comp_act,
+                 "last":stat_comp_act_last,
+                 "data":data}
+    return(stat_comp)
+        
+def prep_JSON(qset, ylim=2008): 
+    # voir si possible de simplifier ! passer le filtre plutôt que le qset pour pouvoir ensuite combiner les filtres !
 #    type_bike=list()
     ser_dist=list()
     ser_time=list()
     ser_deniv=list()
-    
-    if sel:
-        tours=BikeTour.objects.filter(Type__in=[1, 2]).values_list('id', flat=True)
-        qset=qset.filter(Refparcours__in = tours)
   
     lst_act=BikeTour.objects.filter(id__in = qset.values_list("Refparcours", flat=True)).values_list("Type", flat=True)
     lst_act_unique=set(lst_act)
@@ -216,107 +220,91 @@ def prep_JSON(qset, ylim=2008, sel=False):
     
     return context
 
-def prep_JSON_start(qset, ylim=2008, sel=False): 
-    # à adapter, 
-    # - doit permettre agrégation step1 par année OU activité
-    categ=list()
-    ser_dist=list()
-    ser_time=list()
-    ser_deniv=list()
-            
-    if sel:
-        tours=BikeTour.objects.filter(Type__in=[1, 2]).values_list('id', flat=True)
-        qset=qset.filter(Refparcours__in = tours)
-  
-    lst_act=BikeTour.objects.filter(id__in = qset.values_list("Refparcours", flat=True)).values_list("Type", flat=True)
-    lst_act_unique=set(lst_act)
+def prep_JSON_start(): 
+
     dt=datetime.date.today()
+    flt=(Q(Date__month__lt=dt.month)|(Q(Date__day__lte=dt.day)&Q(Date__month=dt.month)))
+
+#    data_dist=list()
+    data_t=list()
+#    data_deniv=list()
+#    data_n=list()
+#    data_dist_l3=list()
+    data_t_l3=list()
+#    data_deniv_l3=list()
+#    data_n_l3=list()
     
-    data={"y":qset.filter(Date__year=dt.year),
-          "last_3y":qset.filter(Q(Date__year__gte=(dt.year-3))&Q(Date__year__lt=dt.year))
-          }
-    
-    for t in lst_act_unique :
-        dist_bike=list()
-        time_bike=list()
-        deniv_bike=list()
-        l_t = BikeTour.objects.filter(Type=t).values_list("pk", flat=True)
-        tp = Type.objects.get(pk=t).Type
-        for k, v in data.items():
-            if k=="last_3y":
-                l=3
-            else:
-                l=1
-            if k not in categ:
-                categ.append(k)
-            tmp = v.filter(Refparcours__in = l_t).aggregate(Nb=Count("Distance"), Distance_tot=Sum("Distance"), Temps_tot=Sum("Temps"), Dénivelé_tot=Sum("Dénivelé"))
-            if not tmp["Distance_tot"] is None:
-                 dist_bike.append(round(tmp["Distance_tot"]/l,0))
-            else:
-                 dist_bike.append(0)
-            if not tmp["Temps_tot"] is None:
-                 time_bike.append(round(tmp["Temps_tot"].total_seconds()/3600/l,1))
-            else :
-                 time_bike.append(0)
-            if not tmp["Dénivelé_tot"] is None:
-                 deniv_bike.append(tmp["Dénivelé_tot"]/l)
-            else:
-                deniv_bike.append(0)
+    for t in Type.objects.values_list("Type", flat=True):
+        tmp=list()
+        tmp_l3=list()
+        lst_m={y.month for y in Perfo.objects.filter(flt).dates("Date", "month", order="ASC")}
+        for y in lst_m:
+            tmp.append(agrperfo(Perfo.objects.filter(flt, Q(Date__month__lte=y), Q(Date__year=dt.year), Q(Refparcours__Type__Type=t)), form=False))
+            tmp_l3.append(agrperfo(Perfo.objects.filter(flt, Q(Date__month__lte=y), Q(Date__year__gte=(dt.year-3)), Q(Date__year__lt=dt.year), Q(Refparcours__Type__Type=t)), stat="avg_sub",  div=3, form=False))
         
-        serie = {'name': tp,
-                 'data': dist_bike,
-        #                 'color': 'blue',
-        #                 'dataLabels': {
-        #                         'enabled': True}
-                    }
-        ser_dist.append(serie)
-                
-        serie = {'name': tp,
-                 'data': time_bike,
-        #                 'color': 'red'
-                    }
-        ser_time.append(serie)
-        #        
-        serie = {'name': tp,
-                 'data': deniv_bike,
-        #                 'color': 'green'
-                    }
-        ser_deniv.append(serie)
+        # ---- séries année courante
+#        data_dist.append({"name":t, "data":[0 if k["Distance_tot"] is None else k["Distance_tot"] for k in tmp] })
+        data_t.append({"name":t, "data":[0 if k["Temps_tot"] is None else round(k["Temps_tot"].total_seconds()/3600,1) for k in tmp]})
+#        data_deniv.append({"name":t, "data":[0 if k["Dénivelé_tot"] is None else k["Dénivelé_tot"] for k in tmp]})
+#        data_n.append({"name":t, "data":[0 if k["Nb"] is None else k["Nb"] for k in tmp] })
+        
+        # ---- séries années last_3
+#        data_dist_l3.append({"name":t, "data":[0 if k["Distance_tot"] is None else k["Distance_tot"] for k in tmp_l3] })
+        data_t_l3.append({"name":t, "data":[0 if k["Temps_tot"] is None else round(k["Temps_tot"].total_seconds()/3600,1) for k in tmp_l3]})
+#        data_deniv_l3.append({"name":t, "data":[0 if k["Dénivelé_tot"] is None else k["Dénivelé_tot"] for k in tmp_l3]})
+#        data_n_l3.append({"name":t, "data":[0 if k["Nb"] is None else k["Nb"] for k in tmp_l3] })
 
-    chart = {
-        'chart': {'type': 'bar'},
-        'title': {'text': 'Temps par activité'},
-        'xAxis': {'categories': categ},
-        'yAxis': { 'dateTimeLabelFormats' : {
-                                                'hour': '%H:%M',
-                                                },                               
-                  'title': {
-                              'enabled': True,
-                              'text': 'Temps (heures)',
-                              'style': {
-                                      'fontWeight': 'normal',
-#                                      'color':'black'
-                                      }
-                             },
-                  'max':200
-                  },
-        'plotOptions': {
-                       'bar': {
-                                   'stacking': 'normal',
-                                    'dataLabels': {
-                                                      'enabled': True
-                                                      }
-                                      }
+#   area chart
+    chart={"chart": { "type": 'area'},
+           "title": {
+                       "text": 'Année courante'
+                     },
+           "subtitle": {
+                           "text": '- Heures cumulées -'
                         },
-        'series': ser_time
-    }
-      
-    time = json.dumps(chart)
+           "xAxis": {
+                       "categories": list(lst_m),
+                       "tickmarkPlacement": 'on',
+                       "title": {
+                               "enabled": False
+                               }
+                    },
+          "yAxis": {
+                      "title": {
+                              "text": 'Hrs'
+                              }
+#                     ,"max":200
+                   },
+         "tooltip": {
+                     "split": True,
+                     "valueSuffix": " hrs"
+                    },
+        "plotOptions": {
+                        "area": {
+                                 "stacking": "normal",
+                                 "lineColor": "#666666",
+                                 "lineWidth": 1,
+                                 "marker": {
+                                             "lineWidth": 1,
+                                             "lineColor": '#666666'
+                                            }
+                                 }
+                      },
+        "series": data_t
+        }
 
-    context = {"time":time}
+    chart_t = json.dumps(chart)
+    
+    chart.update({"title": {"text": 'Moyenne 3 dernières années'},
+                  "series":data_t_l3})
+                                 
+    chart_t_l3=json.dumps(chart)
+    
+    context = {"chart_t":chart_t,
+               "chart_t_l3":chart_t_l3}
     
     return context
-   
+  
 
 ##### Listes de choix
 
@@ -332,9 +320,7 @@ def index(request):
                "stat_comp_act_last":stat_comp["last"],
                "stat_comp_all_act":stat_comp_all["act"],
                "stat_comp_all_act_last":stat_comp_all["last"]}
-    dt=datetime.date.today()
-    flt=Q(Date__month__lt=dt.month)|(Q(Date__day__lte=dt.day)&Q(Date__month=dt.month))
-    context.update({"chart_tot":prep_JSON_start(Perfo.objects.filter(flt), sel=False)})
+    context.update({"chart_tot":prep_JSON_start()})
     return render(request, "biketours/main_index.html", context)
 
 def index_tours(request):
@@ -411,7 +397,7 @@ def stat_comp(request):
     stat_comp_act_y = dict()
     for t in Type.objects.values_list("pk", flat=True) :
         tours = BikeTour.objects.filter(Type=t).values_list('id', flat=True).order_by('id')
-        data_comp_y = stat_comp["data"].filter(Refparcours__in = tours)
+        data_comp_y = stat_comp_all["data"].filter(Refparcours__in = tours)
         tmp=dict()
         for y in Perfo.objects.dates("Date", "year", order="DESC") :
                 data_comp_act_y = data_comp_y.filter(Date__year=y.year)
@@ -444,8 +430,8 @@ def stat_month(request, mth_id):
     data_y = Perfo.objects.filter(Date__month=mth_id)
     
     # valeurs totales : mois en cours + moyenne 3 dernières années
-    stat_comp=comp_any(data_y)
-    stat_comp_all=comp_any(data_y, restr=False)
+    stat_comp=comp_any(filt=Q(Date__month=mth_id))
+    stat_comp_all=comp_any(filt=Q(Date__month=mth_id), restr=False)
         
     # valeurs mensuelles par activité, par année       
     stat_comp_act_y = dict()
@@ -510,15 +496,12 @@ def activ(request):
 
 def stat_act(request, act_id):
     # valeurs par activité
-    tours = BikeTour.objects.filter(Type=act_id)
-    tours = tours.values_list('id', flat=True).order_by('id')
-    data_act = Perfo.objects.filter(Refparcours__in = tours)
-    stat_comp=comp_any(data_act, restr=False)
-        
+    stat_comp=comp_any(Q(Refparcours__Type=act_id), restr=False)
+       
     # valeurs par activité, par année
     stat_act_y = dict()
     for y in Perfo.objects.dates("Date", "year", order="DESC") :
-        data_act_y = data_act.filter(Date__year=y.year)
+        data_act_y = Perfo.objects.filter(Refparcours__Type=act_id, Date__year=y.year)
         stat_act_y[y.year] = agrperfo(data_act_y, stat="sum")
     
     context = {
@@ -531,21 +514,21 @@ def stat_act(request, act_id):
 #### 3. Graph A DEVELOPPER !!!
 
 def graph_year(request):
-    context = prep_JSON(Perfo.objects.all(), sel=False)
+    context = prep_JSON(Perfo.objects.all())
     context.update({"t":"Valeurs annuelles"})
     return render(request, "biketours/graph.html" ,context)
 
 def graph_month(request):
     dt=datetime.date.today()
     flt=Q(Date__month=dt.month)
-    context = prep_JSON(Perfo.objects.filter(flt), sel=False)
+    context = prep_JSON(Perfo.objects.filter(flt))
     context.update({"t":"Valeurs mois courant : "+str(dt.strftime("%B"))})
     return render(request, "biketours/graph.html" ,context)
 
 def graph_comp(request):
     dt=datetime.date.today()
     flt=Q(Date__month__lt=dt.month)|(Q(Date__day__lte=dt.day)&Q(Date__month=dt.month))
-    context = prep_JSON(Perfo.objects.filter(flt), sel=False)
+    context = prep_JSON(Perfo.objects.filter(flt))
     context.update({"t":"Valeurs au "+str(dt)})
     return render(request, "biketours/graph.html" ,context)
 
@@ -562,16 +545,14 @@ def list_m(request, mth_id):
     return render(request, "biketours/list.html" ,context)
 
 def list_act(request, act_id):
-    tours = BikeTour.objects.filter(Type=act_id)
-    tours = tours.values_list('id', flat=True).order_by('id')
-    list_a = Perfo.objects.filter(Refparcours__in = tours)
+    list_a = Perfo.objects.filter(Refparcours__Type=act_id)
     list_a_y = dict()
     for y in Perfo.objects.dates("Date", "year", order="DESC") :
         list_a_y[y.year] = list_a.filter(Date__year=y.year).order_by("Date")
     context = {"list":list_a_y,
 				"type":"activité",
 				"det":Type.objects.get(pk=act_id).Type}
-    return render(request, "biketours/list.html" ,context)
+    return render(request, "biketours/list.html" ,context)    
     
 ##### 5. Input données
 
@@ -590,50 +571,6 @@ def datainput(request):
             context = {"test":test}
             return render(request, "biketours/input.html" ,context)
 
-
-# exemple
-#def upload_csv(request):
-#	data = {}
-#	if "GET" == request.method:
-#		return render(request, "myapp/upload_csv.html", data)
-#    # if not GET, then proceed
-#	try:
-#		csv_file = request.FILES["csv_file"]
-#		if not csv_file.name.endswith('.csv'):
-#			messages.error(request,'File is not CSV type')
-#			return HttpResponseRedirect(reverse("myapp:upload_csv"))
-#        #if file is too large, return
-#		if csv_file.multiple_chunks():
-#			messages.error(request,"Uploaded file is too big (%.2f MB)." % (csv_file.size/(1000*1000),))
-#			return HttpResponseRedirect(reverse("myapp:upload_csv"))
-#
-#		file_data = csv_file.read().decode("utf-8")		
-#
-#		lines = file_data.split("\n")
-#		#loop over the lines and save them in db. If error , store as string and then display
-#		for line in lines:						
-#			fields = line.split(",")
-#			data_dict = {}
-#			data_dict["name"] = fields[0]
-#			data_dict["start_date_time"] = fields[1]
-#			data_dict["end_date_time"] = fields[2]
-#			data_dict["notes"] = fields[3]
-#			try:
-#				form = EventsForm(data_dict)
-#				if form.is_valid():
-#					form.save()					
-#				else:
-#					logging.getLogger("error_logger").error(form.errors.as_json())												
-#			except Exception as e:
-#				logging.getLogger("error_logger").error(repr(e))					
-#				pass
-#
-#	except Exception as e:
-#		logging.getLogger("error_logger").error("Unable to upload file. "+repr(e))
-#		messages.error(request,"Unable to upload file. "+repr(e))
-#
-#	return HttpResponseRedirect(reverse("myapp:upload_csv"))
-    
 ##### 9999. Tests
 
 def tests(request):
@@ -641,7 +578,7 @@ def tests(request):
     dt=datetime.date.today()
     flt=Q(Date__month__lt=dt.month)|(Q(Date__day__lte=dt.day)&Q(Date__month=dt.month))
     qset=Perfo.objects.filter(flt)
-    sel=False
+    sel=True
     
     type_bike=list()
     ser_dist=list()
@@ -734,14 +671,274 @@ def tests(request):
                   'series':ser_deniv})
     deniv = json.dumps(chart)
     
-    # test2 = aggregate django-style
+    ######### ESSAI SUR LIENS ENTRE TABLES ####################
+    # lien forward, p.ex. perfo => biketour, foreignkey__champ
+    # lien backward, p.ex. biketour => perfo, nom_model__champ
+    
+    # problématique des filters enchaînés : https://stackoverflow.com/questions/8164675/chaining-multiple-filter-in-django-is-this-a-bug
+    # complex lookups : https://docs.djangoproject.com/en/dev/topics/db/queries/#complex-lookups-with-q-objects
+    
+    # test2 = aggregate django-style (backward relation)
     agr = BikeTour.objects.annotate(Nb=Count("perfo__Distance"), Distance_tot=Sum("perfo__Distance"), Temps_tot=Sum("perfo__Temps"), Dénivelé_tot=Sum("perfo__Dénivelé"))
+    agr2 = Type.objects.annotate(Nb=Count("biketour__perfo__Distance"), Distance_tot=Sum("biketour__perfo__Distance"), Temps_tot=Sum("biketour__perfo__Temps"), Dénivelé_tot=Sum("biketour__perfo__Dénivelé"))
+        
+    # test3 = remonter champs (forward relation)
+    tp=Perfo.objects.filter(Date__year=2020).values("Date","Refparcours__Parcours", "Refparcours__Type__Type")
+    tp2=Perfo.objects.filter(Date__year=2020)
+    tp3=[(v.Refparcours.Parcours, v.Refparcours.Type, v.Refparcours.But) for v in Perfo.objects.filter(Date__year=2020)]
+   
+    # essai agrégation par activité, marche !
+    flt=Q(biketour__Type__in=[1, 2])&Q(biketour__perfo__Date__year=2019)
+    test3=Type.objects.filter(flt).annotate(Nb=Count("biketour__perfo__Distance"), Distance_tot=Sum("biketour__perfo__Distance"), Temps_tot=Sum("biketour__perfo__Temps"), Dénivelé_tot=Sum("biketour__perfo__Dénivelé"))
+    test4={k.Type:{"Nb":k.Nb, "Distance_tot":k.Distance_tot, "Temps_tot":k.Temps_tot, "Dénivelé_tot":k.Dénivelé_tot} for k in test3}
+    test4_form={k:{i:fmt_dct(i, j) for i, j in v.items()} for k, v in test4.items() }
+    
+    # essai agrégation par année avec sélection vtt/route, marche !
+    flt=Q(Refparcours__Type__in=[1, 2])
+    test5=Perfo.objects.filter(flt).dates("Date", "year", order="DESC").values("datefield").annotate(Nb=Count("Distance"), Distance_tot=Sum("Distance"), Temps_tot=Sum("Temps"), Dénivelé_tot=Sum("Dénivelé"))
+    test5b={k["datefield"]:{"Nb":k["Nb"], "Distance_tot":k["Distance_tot"], "Temps_tot":k["Temps_tot"], "Dénivelé_tot":k["Dénivelé_tot"]} for k in test5}
+    test5_form={k:{i:fmt_dct(i, j) for i, j in v.items()} for k, v in test5b.items() }
+
+    # essai agrégation après multiples filter
+    flt1=Q(Refparcours__Type__in=[1, 2,3])
+    flt2=Q(Date__year__gte=2016)
+    flt3=Q(Date__month=4)
+    flt4=Q(Dénivelé__gt=500)
+    test6=Perfo.objects.filter(flt1, flt2, flt3, flt4).dates("Date", "year", order="DESC").values("datefield").annotate(Nb=Count("Distance"), Distance_tot=Sum("Distance"), Temps_tot=Sum("Temps"), Dénivelé_tot=Sum("Dénivelé"))
+    test6b={k["datefield"]:{"Nb":k["Nb"], "Distance_tot":k["Distance_tot"], "Temps_tot":k["Temps_tot"], "Dénivelé_tot":k["Dénivelé_tot"]} for k in test6}
+    test6_form={k:{i:fmt_dct(i, j) for i, j in v.items()} for k, v in test6b.items() }
+
+    ######### ESSAI POUR NOUVEAUX GRAPHIQUES ####################
+    
+    ylim=2008
+    dt=datetime.date.today()
+    flt=(Q(Date__month__lt=dt.month)|(Q(Date__day__lte=dt.day)&Q(Date__month=dt.month)))
+    test7=Perfo.objects.filter(flt, Q(Date__year=dt.year)).dates("Date", "month", order="ASC").values("datefield").annotate(Nb=Count("Distance"), Distance_tot=Sum("Distance"), Temps_tot=Sum("Temps"), Dénivelé_tot=Sum("Dénivelé"))
+    
+    data_dist=list()
+    data_t=list()
+    data_deniv=list()
+    data_n=list()
+    data_dist_l3=list()
+    data_t_l3=list()
+    data_deniv_l3=list()
+    data_n_l3=list()
+    
+    for t in Type.objects.values_list("Type", flat=True):
+        tmp=list()
+        tmp_l3=list()
+        lst_m={y.month for y in Perfo.objects.filter(flt).dates("Date", "month", order="ASC")}
+        for y in lst_m:
+            tmp.append(agrperfo(Perfo.objects.filter(flt, Q(Date__month__lte=y), Q(Date__year=dt.year), Q(Refparcours__Type__Type=t)), form=False))
+            tmp_l3.append(agrperfo(Perfo.objects.filter(flt, Q(Date__month__lte=y), Q(Date__year__gte=(dt.year-3)), Q(Date__year__lt=dt.year), Q(Refparcours__Type__Type=t)), stat="avg_sub",  div=3, form=False))
+        # séries année courante
+        data_dist.append({"name":t, "data":[0 if k["Distance_tot"] is None else k["Distance_tot"] for k in tmp] })
+        data_t.append({"name":t, "data":[0 if k["Temps_tot"] is None else round(k["Temps_tot"].total_seconds()/3600,1) for k in tmp]})
+        data_deniv.append({"name":t, "data":[0 if k["Dénivelé_tot"] is None else k["Dénivelé_tot"] for k in tmp]})
+        data_n.append({"name":t, "data":[0 if k["Nb"] is None else k["Nb"] for k in tmp] })
+        # séries années last_3
+        data_dist_l3.append({"name":t, "data":[0 if k["Distance_tot"] is None else k["Distance_tot"] for k in tmp_l3] })
+        data_t_l3.append({"name":t, "data":[0 if k["Temps_tot"] is None else round(k["Temps_tot"].total_seconds()/3600,1) for k in tmp_l3]})
+        data_deniv_l3.append({"name":t, "data":[0 if k["Dénivelé_tot"] is None else k["Dénivelé_tot"] for k in tmp_l3]})
+        data_n_l3.append({"name":t, "data":[0 if k["Nb"] is None else k["Nb"] for k in tmp_l3] })
+
+
+#   area chart
+    chart={"chart": { "type": 'area'},
+           "title": {
+                       "text": 'Année courante'
+                     },
+           "subtitle": {
+                           "text": '- Heures cumulées -'
+                        },
+           "xAxis": {
+                       "categories": list(lst_m),
+                       "tickmarkPlacement": 'on',
+                       "title": {
+                               "enabled": False
+                               }
+                    },
+          "yAxis": {
+                      "title": {
+                              "text": 'Hrs'
+                              }
+#                     ,"max":200
+                   },
+         "tooltip": {
+                     "split": True,
+                     "valueSuffix": " hrs"
+                    },
+        "plotOptions": {
+                        "area": {
+                                 "stacking": "normal",
+                                 "lineColor": "#666666",
+                                 "lineWidth": 1,
+                                 "marker": {
+                                             "lineWidth": 1,
+                                             "lineColor": '#666666'
+                                            }
+                                 }
+#                        "area": {
+#                                 "pointStart": 1,
+#                                 "marker": {
+#                                             "enabled": False,
+#                                             "symbol": 'circle',
+#                                             "radius": 2,
+#                                             "states": {
+#                                                         "hover": {
+#                                                                     "enabled": True
+#                                                                     }
+#                                                         }
+#                                            }
+#                                }
+                      },
+        "series": data_t
+#        "series": [{
+#                        "name": 'Asia',
+#                        "data": [502, 635, 809, 947, 1402, 3634, 5268]
+#                    }, {
+#                        "name": 'Africa',
+#                        "data": [106, 107, 111, 133, 221, 767, 1766]
+#                    }, {
+#                        "name": 'Europe',
+#                        "data": [163, 203, 276, 408, 547, 729, 628]
+#        }
+#                    ]
+        }
+
+    test_chart = json.dumps(chart)
+    
+    chart.update({"title": {"text": 'Moyenne 3 dernières années'},
+                  "series":data_t_l3})
+    test_chart_l3=json.dumps(chart)
     
     context = {"dist":dist,
                "time":time,
                "deniv":deniv,
-               "agr":agr}
+               "agr":agr,
+               "agr2":agr2
+               ,"type":tp
+               ,"type2":tp2
+               ,"type3":tp3
+               ,"test3":test3
+               ,"test4":test4_form
+               ,"test5":test5_form
+               ,"test6":test6_form
+               ,"test7":test7
+               ,"test_chart":test_chart
+               ,"test_chart_l3":test_chart_l3
+               ,"test_n":data_t_l3
+                              }
 
     
     return render(request, "biketours/tests.html" ,context)
 
+
+
+
+###### plus utilisé
+    
+def prep_JSON_startOLD(ylim=2008, sel=False): 
+    # à adapter, 
+    # - doit permettre agrégation step1 par année OU activité
+    
+    dt=datetime.date.today()
+    flt=Q(Date__month__lt=dt.month)|(Q(Date__day__lte=dt.day)&Q(Date__month=dt.month))
+    qset=(Perfo.objects.filter(flt))
+    
+    categ=list()
+    ser_dist=list()
+    ser_time=list()
+    ser_deniv=list()
+            
+    if sel:
+        qset=qset.filter(Refparcours__Type__in=[1, 2]) # ne fonctionne vraisemblablement pas, à tester ---- NB : pas utilisé
+  
+    lst_act=BikeTour.objects.filter(id__in = qset.values_list("Refparcours", flat=True)).values_list("Type", flat=True)
+    lst_act_unique=set(lst_act)
+    dt=datetime.date.today()
+    
+    data={"y":qset.filter(Date__year=dt.year),
+          "last_3y":qset.filter(Q(Date__year__gte=(dt.year-3))&Q(Date__year__lt=dt.year))
+          }
+    
+    for t in lst_act_unique :
+        dist_bike=list()
+        time_bike=list()
+        deniv_bike=list()
+        l_t = BikeTour.objects.filter(Type=t).values_list("pk", flat=True)
+        tp = Type.objects.get(pk=t).Type
+        for k, v in data.items():
+            if k=="last_3y":
+                l=3
+            else:
+                l=1
+            if k not in categ:
+                categ.append(k)
+            tmp = v.filter(Refparcours__in = l_t).aggregate(Nb=Count("Distance"), Distance_tot=Sum("Distance"), Temps_tot=Sum("Temps"), Dénivelé_tot=Sum("Dénivelé"))
+            if not tmp["Distance_tot"] is None:
+                 dist_bike.append(round(tmp["Distance_tot"]/l,0))
+            else:
+                 dist_bike.append(0)
+            if not tmp["Temps_tot"] is None:
+                 time_bike.append(round(tmp["Temps_tot"].total_seconds()/3600/l,1))
+            else :
+                 time_bike.append(0)
+            if not tmp["Dénivelé_tot"] is None:
+                 deniv_bike.append(tmp["Dénivelé_tot"]/l)
+            else:
+                deniv_bike.append(0)
+        
+        serie = {'name': tp,
+                 'data': dist_bike,
+        #                 'color': 'blue',
+        #                 'dataLabels': {
+        #                         'enabled': True}
+                    }
+        ser_dist.append(serie)
+                
+        serie = {'name': tp,
+                 'data': time_bike,
+        #                 'color': 'red'
+                    }
+        ser_time.append(serie)
+        #        
+        serie = {'name': tp,
+                 'data': deniv_bike,
+        #                 'color': 'green'
+                    }
+        ser_deniv.append(serie)
+
+    chart = {
+        'chart': {'type': 'bar'},
+        'title': {'text': 'Temps par activité'},
+        'xAxis': {'categories': categ},
+        'yAxis': { 'dateTimeLabelFormats' : {
+                                                'hour': '%H:%M',
+                                                },                               
+                  'title': {
+                              'enabled': True,
+                              'text': 'Temps (heures)',
+                              'style': {
+                                      'fontWeight': 'normal',
+#                                      'color':'black'
+                                      }
+                             },
+                  'max':200
+                  },
+        'plotOptions': {
+                       'bar': {
+                                   'stacking': 'normal',
+                                    'dataLabels': {
+                                                      'enabled': True
+                                                      }
+                                      }
+                        },
+        'series': ser_time
+    }
+      
+    time = json.dumps(chart)
+
+    context = {"time":time}
+    
+    return context

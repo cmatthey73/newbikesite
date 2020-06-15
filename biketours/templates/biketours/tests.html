@@ -25,14 +25,99 @@
  <script>
   Highcharts.chart('container_time', {{ time|safe }});
 </script>
-{% for k in agr %}
+<!-- {% for k in agr %}
 <br>
-{{k}}{{k.Count}}{{k.Distance_tot}}
+{{k}}-{{k.Nb}}-{{k.Distance_tot}}
 <br>
 {%endfor %}	
+<br>
+{% for k in agr2 %}
+<br>
+{{k}}-{{k.Nb}}-{{k.Distance_tot}}
+<br>
+{%endfor %}	
+ -->
+<!-- <br>
+{% for k in type %}
+<br>
+{{k}}
+<br>
+{%endfor %}	
+<br>
+{% for k in type2 %}
+<br>
+{{k.Refparcours.Parcours}}
+{{k.Refparcours.Type}}
 
-</table>
-</body>
-
-
+<br>
+{%endfor %}	
+<br>
+{% for k in type3 %}
+<br>
+{{k}}
+<br>
+{%endfor %}	 -->
+<!-- <br>
+{{test3}}
+{% for k in test3 %}
+<br>
+{{k}} 
+{{k.Nb}}
+{{k.Distance_tot}}
+{{k.Temps_tot}}
+{{k.Dénivelé_tot}}
+<br>
+{%endfor %}-->	
+<br>
+{% for k, v in test4.items %}
+<br>
+{{k}} -- {{v}}
+<br> 
+{%endfor %}	
+<br>
+<!-- {% for k, v in test5.items %}
+<br>
+{{k.year}} -- {{v}}
+<br> 
+{%endfor %}	
+<br> -->
+<br>
+{% for k, v in test6.items %}
+<br>
+{{k.year}} -- {{v}}
+<br> 
+{%endfor %}	
+<br>
+<br>
+{% for k in test7 %}
+<br>
+{{k}} 
+<br> 
+{%endfor %}	
+<br>
+<!-- <div id="container_test"></div>
+ <script>
+  Highcharts.chart('container_test', {{ test_chart|safe }});
+</script>
+<br>
+<div id="container_test_l3"></div>
+ <script>
+  Highcharts.chart('container_test_l3', {{ test_chart_l3|safe }});
+</script> -->
+<br>
+{% for k in test_n %}
+<br>
+{{k}}  
+<br> 
+{%endfor %}	
+<br>
+<div class="container" id="container_test"></div>
+<div class="container" id="container_test_l3"></div>
+<script>
+Highcharts.chart('container_test', {{ test_chart|safe }});
+</script>
+<script>
+Highcharts.chart('container_test_l3', {{ test_chart_l3|safe }});
+</script>
+ 
 {% endblock %}
