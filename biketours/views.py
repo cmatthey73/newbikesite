@@ -247,7 +247,7 @@ def prep_JSON_start():
                       "title": {
                               "text": 'Hrs'
                               }
-#                     ,"max":200
+                     ,"max":150
                    },
          "tooltip": {
                      "split": True,
