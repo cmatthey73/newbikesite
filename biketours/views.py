@@ -104,7 +104,9 @@ def comp_today(restr=True): # comparaison à la date actuelle
 #                 "data":data_comp}
 #    return(stat_comp)
     
-def comp_any(filt, y=None, restr=True): # autres comparaisons basées sur perfo, filtre initial à renseigner ! 
+def comp_any(filt=Q(Date__month__lt=99), y=None, restr=True): 
+    # autres comparaisons basées sur perfo, filtre initial (appliqué à Perfo) à renseigner !
+    # filtre par défaut = filtre inutile => = pas de filtre !
     if y is None:
         dt=datetime.date.today()
     else:
@@ -437,8 +439,8 @@ def years(request):
 def stat_year(request, year_id):
     
     # valeurs totales : année en cours + moyenne 3 dernières années
-    stat_comp=comp_any(Perfo.objects.all(), y=year_id)
-    stat_comp_all=comp_any(Perfo.objects.all(), y=year_id, restr=False)
+    stat_comp=comp_any(y=year_id)
+    stat_comp_all=comp_any(y=year_id, restr=False)
         
     # valeurs annuelles
     data_y = Perfo.objects.filter(Date__year=year_id)
