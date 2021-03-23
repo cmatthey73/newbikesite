@@ -111,13 +111,21 @@
 <br> 
 {%endfor %}	
 <br>
-<div class="container" id="container_test"></div>
-<div class="container" id="container_test_l3"></div>
+<<div class="container" id="container_test"></div>
 <script>
 Highcharts.chart('container_test', {{ test_chart|safe }});
 </script>
+<div class="container" id="container_test_l3"></div>
 <script>
 Highcharts.chart('container_test_l3', {{ test_chart_l3|safe }});
+</script>
+<br>
+{{data_snk}}
+<br>
+
+<div class="container" id="container_testsnkey"></div>
+<script>
+Highcharts.chart('container_testsnkey', {{ testsnk|safe }});
 </script>
  
 {% endblock %}

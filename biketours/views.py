@@ -517,8 +517,8 @@ def list_m(request, mth_id):
     for y in Perfo.objects.dates("Date", "year", order="DESC") :
         list_m_y[y.year] = list_m.filter(Date__year=y.year).order_by("Date")
     context = {"list":list_m_y,
-				"type":"mois",
-				"det":mth_id}
+                "type":"mois",
+                "det":mth_id}
     return render(request, "biketours/list.html" ,context)
 
 def list_act(request, act_id):
@@ -527,8 +527,8 @@ def list_act(request, act_id):
     for y in Perfo.objects.dates("Date", "year", order="DESC") :
         list_a_y[y.year] = list_a.filter(Date__year=y.year).order_by("Date")
     context = {"list":list_a_y,
-				"type":"activité",
-				"det":Type.objects.get(pk=act_id).Type}
+                "type":"activité",
+                "det":Type.objects.get(pk=act_id).Type}
     return render(request, "biketours/list.html" ,context)    
     
 ##### 5. Input données
@@ -789,6 +789,28 @@ def tests(request):
                   "series":data_t_l3})
     test_chart_l3=json.dumps(chart)
     
+    ######### ESSAI POUR SANKEY ####################
+    snkey={"chart": {"type": 'sankey'},
+           "title": {"text": 'Test Sankey'},
+           "series":[{
+                      "keys": ['from', 'to', 'weight'],
+                      "data": [
+                                    ['Brazil', 'Spain', 1],
+									['Spain', 'Brazil', 2],
+                                    ['Brazil', 'England', 1],
+                                    ['Canada', 'Portugal', 1],
+                                    ['Canada', 'France', 5],
+                                    ['Mexico', 'Spain', 5],
+                                    ['USA', 'England', 5],
+                                    ['Portugal', 'Angola', 2],
+                                    ['South Africa', 'China', 5],
+                                    ['Morocco', 'India', 1],
+                                    ['Morocco', 'Japan', 3]
+                                ]
+                    }]
+					}
+    test_snk = json.dumps(snkey)
+    
     context = {"dist":dist,
                "time":time,
                "deniv":deniv,
@@ -805,6 +827,8 @@ def tests(request):
                ,"test_chart":test_chart
                ,"test_chart_l3":test_chart_l3
                ,"test_n":data_t_l3
+			   ,"data_snk":snkey
+               ,"testsnk":test_snk
                               }
 
     
