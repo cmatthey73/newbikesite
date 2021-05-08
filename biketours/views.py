@@ -800,16 +800,47 @@ def tests(request):
                                     ['Brazil', 'England', 1],
                                     ['Canada', 'Portugal', 1],
                                     ['Canada', 'France', 5],
+									['France', 'Canada', 3],
                                     ['Mexico', 'Spain', 5],
                                     ['USA', 'England', 5],
                                     ['Portugal', 'Angola', 2],
                                     ['South Africa', 'China', 5],
                                     ['Morocco', 'India', 1],
-                                    ['Morocco', 'Japan', 3]
+                                    ['Morocco', 'Japan', 3],
+									['Japan', 'Morocco', 3]
                                 ]
                     }]
 					}
     test_snk = json.dumps(snkey)
+	
+	######### ESSAI POUR NETWORK ####################
+    netw={"chart": {"type": 'networkgraph'},
+           "title": {"text": 'Test Network'},
+		   "plotOptions": {"networkgraph": {"keys": ['from', 'to']
+        }},
+           "series":[{
+						"dataLabels": {
+										"enabled": True,
+										"linkFormat": ''
+        },
+                        "data": [
+                                    ['Brazil', 'Spain', 1],
+									['Spain', 'Brazil', 2],
+                                    ['Brazil', 'England', 1],
+                                    ['Canada', 'Portugal', 1],
+                                    ['Canada', 'France', 5],
+									['France', 'Canada', 3],
+                                    ['Mexico', 'Spain', 5],
+                                    ['USA', 'England', 5],
+                                    ['Portugal', 'Angola', 2],
+                                    ['South Africa', 'China', 5],
+                                    ['Morocco', 'India', 1],
+                                    ['Morocco', 'Japan', 3],
+									['Japan', 'Morocco', 3]
+                                ]
+                    }]
+					}
+    test_net = json.dumps(netw)
     
     context = {"dist":dist,
                "time":time,
@@ -829,6 +860,7 @@ def tests(request):
                ,"test_n":data_t_l3
 			   ,"data_snk":snkey
                ,"testsnk":test_snk
+			   ,"testnet":test_net
                               }
 
     
