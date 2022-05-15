@@ -13,12 +13,15 @@ def import_garmin(garm_csv):
     import datetime
     import numpy as np
 
-#    garm_csv="Activities_24022020.csv"
+    # garm_csv="Activities_13022022.csv"
     df = pd.read_csv("C:/Users/chris/Documents/"+garm_csv, header=0, sep=",")
     df.columns=df.columns.str.replace(" ","_") # suppression espaces !
     df.columns
     df.dtypes
     
+    # Traitement changement de noms permanents pour certaines colonnes
+    df.rename(columns={"Ascension_totale": "Gain_alt"}, inplace=True)
+        
     # Traitement des potentielles colonnes manquantes
     col_mis=["Fréquence_cardiaque_moyenne", "Fréquence_cardiaque_maximale", "Distance", "Gain_alt"]
     for c in col_mis:
@@ -50,9 +53,9 @@ def import_garmin(garm_csv):
     df.dtypes
 
     # Transformation champs FC
-#    df[["Fréquence_cardiaque_moyenne",
-#      "Fréquence_cardiaque_maximale"]]=df[["Fréquence_cardiaque_moyenne",
-#      "Fréquence_cardiaque_maximale"]].applymap(lambda x: float(x)) 
+    df[["Fréquence_cardiaque_moyenne", "Fréquence_cardiaque_maximale"]]=df[["Fréquence_cardiaque_moyenne",
+      "Fréquence_cardiaque_maximale"]].applymap(lambda x: float(x) if x is not None else None) 
+    # 30.04.2022 : à vérifier au prochain import !
 
     # 3.2. Chargement base de données
     
